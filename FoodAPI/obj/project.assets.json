@@ -5445,11 +5445,11 @@
   "project": {
     "version": "1.0.0",
     "restore": {
-      "projectUniqueName": "F:\\Project\\FoodAPI\\FoodAPI\\FoodAPI.csproj",
+      "projectUniqueName": "C:\\Users\\ASUS\\Desktop\\SE114-WhatTheFood-BE\\FoodAPI\\FoodAPI.csproj",
       "projectName": "FoodAPI",
-      "projectPath": "F:\\Project\\FoodAPI\\FoodAPI\\FoodAPI.csproj",
+      "projectPath": "C:\\Users\\ASUS\\Desktop\\SE114-WhatTheFood-BE\\FoodAPI\\FoodAPI.csproj",
       "packagesPath": "C:\\Users\\ASUS\\.nuget\\packages\\",
-      "outputPath": "F:\\Project\\FoodAPI\\FoodAPI\\obj\\",
+      "outputPath": "C:\\Users\\ASUS\\Desktop\\SE114-WhatTheFood-BE\\FoodAPI\\obj\\",
       "projectStyle": "PackageReference",
       "fallbackFolders": [
         "C:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages"
@@ -5538,7 +5538,7 @@
             "privateAssets": "all"
           }
         },
-        "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\9.0.300/PortableRuntimeIdentifierGraph.json"
+        "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\9.0.301/PortableRuntimeIdentifierGraph.json"
       }
     }
   }
