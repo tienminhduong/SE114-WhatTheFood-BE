@@ -7,25 +7,34 @@ namespace FoodAPI.Repositories;
 
 public class UserRepository(FoodOrderContext context) : IUserRepository
 {
-    private readonly FoodOrderContext _context = context ?? throw new ArgumentNullException(nameof(context));
-
     public async Task<IEnumerable<User>> GetUsersAsync()
     {
-        return await _context.Users.OrderBy(u => u.Name).ToListAsync();
+        return await context.Users.OrderBy(u => u.Name).ToListAsync();
     }
 
     public async Task<User?> GetUserAsync(int userId)
     {
-        return await _context.Users.FirstOrDefaultAsync(u => u.Id == userId); 
+        return await context.Users.FirstOrDefaultAsync(u => u.Id == userId); 
     }
 
     public async Task AddUserAsync(User user)
     {
-        await _context.Users.AddAsync(user);
+        await context.Users.AddAsync(user);
     }
 
     public async Task<bool> SaveChangesAsync()
     {
-        return (await _context.SaveChangesAsync() > 0);
+        return (await context.SaveChangesAsync() > 0);
+    }
+
+    public void AddUser(User user)
+    {
+        context.Users.Add(user);
+    }
+
+    public async Task<bool> FindPhoneNumberExistsAsync(string phoneNumber)
+    {
+        var user = await context.Users.FirstOrDefaultAsync(u => u.PhoneNumber == phoneNumber);
+        return user != null;
     }
 }

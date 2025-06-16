@@ -14,8 +14,7 @@ public class User
     [MaxLength(50)]
     public string? Name { get; set; }
     [Required]
-    [MaxLength(20)]
-    public string Password { get; set; } = string.Empty;
+    public string PasswordHash { get; set; } = string.Empty;
     
     public ICollection<Address> Addresses { get; set; } = new List<Address>();
     

@@ -16,29 +16,6 @@ public class FoodOrderContext(DbContextOptions<FoodOrderContext> options): DbCon
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
-        modelBuilder.Entity<User>().HasData(
-            new User()
-            {
-                Id = 1,
-                PhoneNumber = "000000001",
-                Name = "Yasuo",
-                Password = "yasuoPassword"
-            },
-            new User()
-            {
-                Id = 2,
-                PhoneNumber = "000000002",
-                Name = "Leesin",
-                Password = "LeesinPassword"
-            },
-            new User()
-            {
-                Id = 3,
-                PhoneNumber = "000000003",
-                Name = "Zed",
-                Password = "zedPassword"
-            }
-            );
         base.OnModelCreating(modelBuilder);
     }
 }
