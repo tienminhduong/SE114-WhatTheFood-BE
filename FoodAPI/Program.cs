@@ -1,8 +1,12 @@
 using System;
+using System.Text;
 using FoodAPI.DbContexts;
 using FoodAPI.Interfaces;
 using FoodAPI.Repositories;
+using FoodAPI.Services;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.IdentityModel.Tokens;
 using Scalar.AspNetCore;
 using Serilog;
 
@@ -31,6 +35,25 @@ builder.Services.AddAutoMapper(AppDomain.CurrentDomain.GetAssemblies());
 
 //Add repository di
 builder.Services.AddScoped<IUserRepository, UserRepository>();
+builder.Services.AddScoped<IAuthService, AuthService>();
+
+builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme).AddJwtBearer(
+    options => {
+        options.TokenValidationParameters = new TokenValidationParameters
+        {
+            ValidateIssuer = true,
+            ValidIssuer = builder.Configuration["AppSettings:Issuer"],
+            ValidateAudience = true,
+            ValidAudience = builder.Configuration["AppSettings:Audience"],
+            ValidateLifetime = true,
+            ValidateIssuerSigningKey = true,
+            IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(builder.Configuration["AppSettings:Token"]!))
+        };
+    });
+
+builder.Services.AddAuthorizationBuilder()
+    .AddPolicy("UserAccessLevel", policy => policy.RequireRole("Admin", "User"))
+    .AddPolicy("AdminAccessLevel", policy => policy.RequireRole("Admin"));
 
 var app = builder.Build();
 

@@ -4,9 +4,10 @@ namespace FoodAPI.Interfaces;
 
 public interface IUserRepository
 {
-    public Task<IEnumerable<User>> GetUsersAsync();
-    public Task<User?> GetUserAsync(int userId);
-    public Task AddUserAsync(User user);
-    
+    Task<IEnumerable<User>> GetUsersAsync();
+    Task<User?> GetUserAsync(int userId);
+    Task AddUserAsync(User user);
+    void AddUser(User user);
     Task<bool> SaveChangesAsync();
+    Task<User?> FindPhoneNumberExistsAsync(string phoneNumber);
 }
