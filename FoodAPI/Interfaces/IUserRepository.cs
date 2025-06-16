@@ -9,5 +9,5 @@ public interface IUserRepository
     Task AddUserAsync(User user);
     void AddUser(User user);
     Task<bool> SaveChangesAsync();
-    Task<bool> FindPhoneNumberExistsAsync(string phoneNumber);
+    Task<User?> FindPhoneNumberExistsAsync(string phoneNumber);
 }
