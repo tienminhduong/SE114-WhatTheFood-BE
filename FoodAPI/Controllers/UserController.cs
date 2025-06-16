@@ -44,4 +44,14 @@ public class UserController(IUserRepository userRepository,
             return BadRequest(ex.Message);
         }
     }
+
+    [HttpPost("login")]
+    public async Task<ActionResult<string>> LoginUser(UserLoginDto userLogin)
+    {
+        string? token = await authService.LoginAsync(userLogin);
+        if (token == null)
+            return BadRequest("Username or password is not correct");
+
+        return Ok(token);
+    }
 }

@@ -19,8 +19,8 @@ namespace FoodAPI.Services
             if (user == null)
                 return null;
 
-            string hash = new PasswordHasher<User>().HashPassword(user, userDto.Password);
-            if (hash != user.PasswordHash)
+            if (new PasswordHasher<User>().VerifyHashedPassword(user, user.PasswordHash, userDto.Password)
+                    == PasswordVerificationResult.Failed)
                 return null;
 
             return CreateToken(user);
