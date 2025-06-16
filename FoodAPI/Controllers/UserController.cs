@@ -29,28 +29,15 @@ public class UserController(IUserRepository userRepository,
         return Ok(mapper.Map<UserDto>(userEntity));
     }
 
-    //[HttpPost]
-    //public async Task<ActionResult<User>> CreateUserAsync(UserForCreationDto user)
-    //{
-    //    var userEntity = _mapper.Map<Entities.User>(user);
-    //    await _userRepository.AddUserAsync(userEntity);
-    //    await _userRepository.SaveChangesAsync();
-    //    var createdUser = _mapper.Map<UserDto>(userEntity);
-    //    return CreatedAtRoute("GetUserById",
-    //        new { userid = userEntity.Id },
-    //        createdUser
-    //        );
-    //}
-
     [HttpPost("register")]
-    public async Task<ActionResult<User>> RegisterUser(UserForCreationDto user)
+    public async Task<ActionResult<UserDto>> RegisterUser(UserForCreationDto user)
     {
         try
         {
             User? newUser = await authService.RegisterAsync(user);
             if (newUser == null)
                 return BadRequest("Register failed!");
-            return Ok(newUser);
+            return Ok(mapper.Map<UserDto>(newUser));
         }
         catch (Exception ex)
         {
