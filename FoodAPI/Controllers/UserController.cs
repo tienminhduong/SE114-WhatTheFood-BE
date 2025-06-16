@@ -2,6 +2,7 @@
 using FoodAPI.Entities;
 using FoodAPI.Interfaces;
 using FoodAPI.Models;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace FoodAPI.Controllers;
@@ -13,6 +14,7 @@ public class UserController(IUserRepository userRepository,
     IMapper mapper): ControllerBase
 {
     [HttpGet]
+    [Authorize(Policy = "AdminAccessLevel")]
     public async Task<ActionResult<IEnumerable<User>>> GetUsers()
     {
         var userEntities = await userRepository.GetUsersAsync();

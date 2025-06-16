@@ -53,7 +53,8 @@ namespace FoodAPI.Services
         {
             List<Claim> claims = [
                 new Claim(ClaimTypes.NameIdentifier, user.PhoneNumber),
-                new Claim(ClaimTypes.Name, user.Name ?? "")
+                new Claim(ClaimTypes.Name, user.Name ?? ""),
+                new Claim(ClaimTypes.Role, user.Role)
             ];
 
             var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(config.GetValue<string>("AppSettings:Token")!));

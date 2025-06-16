@@ -15,6 +15,8 @@ public class User
     public string? Name { get; set; }
     [Required]
     public string PasswordHash { get; set; } = string.Empty;
+
+    public string Role { get; set; } = "User";
     
     public ICollection<Address> Addresses { get; set; } = new List<Address>();
     
