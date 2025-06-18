@@ -59,7 +59,7 @@ namespace FoodAPI.Migrations
 
                     b.HasIndex("UserId");
 
-                    b.ToTable("Addresses");
+                    b.ToTable("Addresses", (string)null);
                 });
 
             modelBuilder.Entity("FoodAPI.Entities.FoodCategory", b =>
@@ -77,7 +77,7 @@ namespace FoodAPI.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("FoodCategories");
+                    b.ToTable("FoodCategories", (string)null);
                 });
 
             modelBuilder.Entity("FoodAPI.Entities.FoodItem", b =>
@@ -118,7 +118,7 @@ namespace FoodAPI.Migrations
 
                     b.HasIndex("RestaurantId");
 
-                    b.ToTable("FoodItems");
+                    b.ToTable("FoodItems", (string)null);
                 });
 
             modelBuilder.Entity("FoodAPI.Entities.Rating", b =>
@@ -146,7 +146,7 @@ namespace FoodAPI.Migrations
                     b.HasIndex("ShippingInfoId")
                         .IsUnique();
 
-                    b.ToTable("Ratings");
+                    b.ToTable("Ratings", (string)null);
                 });
 
             modelBuilder.Entity("FoodAPI.Entities.Restaurant", b =>
@@ -164,7 +164,7 @@ namespace FoodAPI.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("Restaurants");
+                    b.ToTable("Restaurants", (string)null);
                 });
 
             modelBuilder.Entity("FoodAPI.Entities.ShippingInfo", b =>
@@ -208,7 +208,7 @@ namespace FoodAPI.Migrations
 
                     b.HasIndex("UserId");
 
-                    b.ToTable("ShippingInfos");
+                    b.ToTable("ShippingInfos", (string)null);
                 });
 
             modelBuilder.Entity("FoodAPI.Entities.ShippingInfoDetail", b =>
@@ -234,7 +234,7 @@ namespace FoodAPI.Migrations
 
                     b.HasIndex("ShippingInfoId");
 
-                    b.ToTable("ShippingInfoDetails");
+                    b.ToTable("ShippingInfoDetails", (string)null);
                 });
 
             modelBuilder.Entity("FoodAPI.Entities.User", b =>
@@ -264,7 +264,7 @@ namespace FoodAPI.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("Users");
+                    b.ToTable("Users", (string)null);
                 });
 
             modelBuilder.Entity("FoodAPI.Entities.Address", b =>

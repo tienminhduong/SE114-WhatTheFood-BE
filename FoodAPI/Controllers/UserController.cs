@@ -4,6 +4,7 @@ using FoodAPI.Interfaces;
 using FoodAPI.Models;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using System.Security.Claims;
 
 namespace FoodAPI.Controllers;
 
@@ -55,5 +56,18 @@ public class UserController(IUserRepository userRepository,
             return BadRequest("Username or password is not correct");
 
         return Ok(token);
+    }
+
+    [Authorize]
+    [HttpGet("info")]
+    public async Task<ActionResult<UserDto>> CheckUser()
+    {
+        var userPhone = User.FindFirstValue(ClaimTypes.NameIdentifier)!;
+
+        var user = await userRepository.FindPhoneNumberExistsAsync(userPhone);
+        if (user == null)
+            return BadRequest("Who tf are you!");
+
+        return Ok(mapper.Map<UserDto>(user));
     }
 }

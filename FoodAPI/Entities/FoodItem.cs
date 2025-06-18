@@ -10,13 +10,12 @@ public class FoodItem
     public int Id { get; set; }
     [Required]
     [MaxLength(50)]
-    public string FoodName { get; set; }
+    public string FoodName { get; set; } = string.Empty;
     [MaxLength(200)]
-    public string? Description { get; set; }
-    public int? SoldAmount { get; set; }
-    public bool? Available { get; set; }
-    [Required]
-    public int Price { get; set; }
+    public string Description { get; set; } = string.Empty;
+    public int SoldAmount { get; set; } = 0;
+    public bool Available { get; set; } = true;
+    public int Price { get; set; } = 0;
     
     public int FoodCategoryId { get; set; }
     public FoodCategory? FoodCategory { get; set; }

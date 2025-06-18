@@ -1,5 +1,6 @@
 ﻿using AutoMapper;
 using FoodAPI.Entities;
+using FoodAPI.Models;
 
 namespace FoodAPI.Profiles;
 
@@ -7,7 +8,10 @@ public class UserProfile: Profile
 {
     public UserProfile()
     {
-        CreateMap<Entities.User, Models.UserDto>();
-        CreateMap<Models.UserForCreationDto,Entities.User>();
+        CreateMap<User, UserDto>();
+        CreateMap<UserForCreationDto, User>();
+        CreateMap<FoodCategory, FoodCategoryDto>();
+        CreateMap<FoodItem, FoodItemDto>();
+        CreateMap<Restaurant, RestaurantDto>();
     }
 }
