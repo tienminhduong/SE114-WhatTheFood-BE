@@ -11,5 +11,7 @@ public class UserProfile: Profile
         CreateMap<User, UserDto>();
         CreateMap<UserForCreationDto, User>();
         CreateMap<FoodCategory, FoodCategoryDto>();
+        CreateMap<FoodItem, FoodItemDto>();
+        CreateMap<Restaurant, RestaurantDto>();
     }
 }
