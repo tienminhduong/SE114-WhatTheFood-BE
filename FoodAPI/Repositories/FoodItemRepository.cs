@@ -54,6 +54,26 @@ namespace FoodAPI.Repositories
                 .Include(food => food.FoodCategory)
                 .ToListAsync();
 
+            switch (sortBy)
+            {
+                case "priceAsc":
+                    foodItems = foodItems.OrderBy(f => f.Price).ToList();
+                    break;
+                case "priceDesc":
+                    foodItems = foodItems.OrderByDescending(f => f.Price).ToList();
+                    break;
+                case "soldAmountAsc":
+                    foodItems = foodItems.OrderBy(f => f.SoldAmount).ToList();
+                    break;
+                case "soldAmountDesc":
+                    foodItems = foodItems.OrderByDescending(f => f.SoldAmount).ToList();
+                    break;
+                case "":
+                    break;
+                default:
+                    throw new InvalidOperationException("Invalid sort criteria");
+            }
+
             return foodItems;
         }
 

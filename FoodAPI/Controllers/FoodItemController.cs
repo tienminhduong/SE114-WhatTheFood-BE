@@ -8,7 +8,7 @@ namespace FoodAPI.Controllers;
 
 [Route("api/fooditems")]
 [ApiController]
-//[Authorize(Policy = "UserAccessLevel")]
+[Authorize(Policy = "UserAccessLevel")]
 public class FoodItemController(
     IFoodItemRepository foodItemRepository,
     IMapper mapper) : ControllerBase
@@ -25,17 +25,24 @@ public class FoodItemController(
         int priceHigherThan = 0,
         string sortBy = "")
     {
-        var fooditems = await foodItemRepository.GetItemsBy(
-            pageNumber,
-            pageSize,
-            categoryId,
-            nameContains,
-            restaurantId,
-            isAvailableOnly,
-            priceLowerThan,
-            priceHigherThan,
-            sortBy);
+        try
+        {
+            var fooditems = await foodItemRepository.GetItemsBy(
+                pageNumber,
+                pageSize,
+                categoryId,
+                nameContains,
+                restaurantId,
+                isAvailableOnly,
+                priceLowerThan,
+                priceHigherThan,
+                sortBy);
 
-        return Ok(mapper.Map<IEnumerable<FoodItemDto>>(fooditems));
+            return Ok(mapper.Map<IEnumerable<FoodItemDto>>(fooditems));
+        }
+        catch (Exception ex)
+        {
+            return BadRequest(ex.Message);
+        }
     }
 }
