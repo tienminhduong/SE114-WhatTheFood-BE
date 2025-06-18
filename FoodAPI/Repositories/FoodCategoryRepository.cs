@@ -1,34 +1,41 @@
 ﻿using FoodAPI.DbContexts;
 using FoodAPI.Entities;
 using FoodAPI.Interfaces;
+using Microsoft.EntityFrameworkCore;
 
 namespace FoodAPI.Repositories
 {
     public class FoodCategoryRepository(FoodOrderContext dbContext) : IFoodCategoryRepository
     {
-        public Task AddCategoryAsync(string categoryName)
+        public async Task AddCategoryAsync(string categoryName)
         {
-            throw new NotImplementedException();
+            FoodCategory category = new();
+            category.Name = categoryName;
+            await dbContext.FoodCategories.AddAsync(category);
         }
 
-        public Task<IEnumerable<FoodCategory>> GetCategoriesAsync()
+        public async Task<IEnumerable<FoodCategory>> GetCategoriesAsync()
         {
-            throw new NotImplementedException();
+            return await dbContext.FoodCategories.OrderBy(c => c.Name).ToListAsync();
         }
 
-        public Task<FoodCategory?> GetCategoryAsync(int userId)
+        public async Task<FoodCategory?> GetCategoryAsync(int id)
         {
-            throw new NotImplementedException();
+            return await dbContext.FoodCategories.FirstOrDefaultAsync(fc => fc.Id == id);
         }
 
-        public Task<IEnumerable<FoodItem>> GetFoodOfCategoryAsync(int categoryId)
+        public async Task<IEnumerable<FoodItem>> GetFoodOfCategoryAsync(int categoryId)
         {
-            throw new NotImplementedException();
+            var category = await dbContext.FoodCategories.Include(fc => fc.FoodItems)
+                .FirstOrDefaultAsync(fc => fc.Id == categoryId) ??
+                throw new InvalidOperationException("No category found");
+
+            return category.FoodItems;
         }
 
-        public Task<bool> SaveChangesAsync()
+        public async Task<bool> SaveChangesAsync()
         {
-            throw new NotImplementedException();
+            return await dbContext.SaveChangesAsync() > 0;
         }
     }
 }
