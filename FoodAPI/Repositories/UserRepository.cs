@@ -34,6 +34,8 @@ public class UserRepository(FoodOrderContext context) : IUserRepository
 
     public async Task<User?> FindPhoneNumberExistsAsync(string phoneNumber)
     {
-        return await context.Users.FirstOrDefaultAsync(u => u.PhoneNumber == phoneNumber);
+        return await context.Users
+            .Include(u => u.OwnedRestaurant)
+            .FirstOrDefaultAsync(u => u.PhoneNumber == phoneNumber);
     }
 }

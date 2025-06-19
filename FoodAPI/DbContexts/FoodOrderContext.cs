@@ -17,5 +17,28 @@ public class FoodOrderContext(DbContextOptions<FoodOrderContext> options): DbCon
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         base.OnModelCreating(modelBuilder);
+
+        modelBuilder.Entity<Restaurant>()
+            .HasOne(r => r.Owner)
+            .WithMany(o => o.OwnedRestaurant)
+            .HasForeignKey(r => r.OwnerId)
+            .OnDelete(DeleteBehavior.Restrict);
+
+        modelBuilder.Entity<FoodItem>()
+            .HasOne(f => f.FoodCategory)
+            .WithMany(fc => fc.FoodItems)
+            .HasForeignKey(f => f.FoodCategoryId)
+            .OnDelete(DeleteBehavior.Restrict);
+
+        modelBuilder.Entity<FoodItem>()
+            .HasOne(f => f.Restaurant)
+            .WithMany(r => r.FoodItems)
+            .HasForeignKey(f => f.RestaurantId)
+            .OnDelete(DeleteBehavior.Restrict);
+    }
+
+    protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
+    {
+        optionsBuilder.EnableSensitiveDataLogging();
     }
 }
