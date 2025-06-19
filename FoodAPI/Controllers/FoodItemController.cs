@@ -3,6 +3,7 @@ using FoodAPI.Entities;
 using FoodAPI.Interfaces;
 using FoodAPI.Models;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Mvc;
 using System.Security.Claims;
 
@@ -13,7 +14,7 @@ namespace FoodAPI.Controllers;
 public class FoodItemController(
     IFoodItemRepository foodItemRepository,
     IFoodCategoryRepository foodCategoryRepository,
-    IUserRepository userRepository,
+    IAuthService authService,
     IMapper mapper) : ControllerBase
 {
     [HttpGet]
@@ -55,6 +56,10 @@ public class FoodItemController(
     public async Task<ActionResult<FoodItemDto>> GetById(int id)
     {
         var item = await foodItemRepository.GetById(id);
+
+        if (item == null)
+            return NotFound("No food item with that id");
+
         return Ok(mapper.Map<FoodItemDto>(item));
     }
 
@@ -62,7 +67,11 @@ public class FoodItemController(
     [Authorize(Policy = "OwnerAccessLevel")]
     public async Task<ActionResult<FoodItemDto>> CreateNewItem(CreateFoodItemDto itemDto)
     {
-        string? ownerPermissionCheckMsg = await CheckOwnerPermission(itemDto.RestaurantId);
+        string senderPhone = User.FindFirstValue(ClaimTypes.NameIdentifier)!;
+
+        string? ownerPermissionCheckMsg =
+            await authService.CheckOwnerPermission(senderPhone, itemDto.RestaurantId);
+
         if (ownerPermissionCheckMsg != null)
             return BadRequest(ownerPermissionCheckMsg);
 
@@ -89,7 +98,7 @@ public class FoodItemController(
         if (!result)
             return BadRequest("Error on saving");
 
-        return Ok(mapper.Map<FoodItemDto>(item));
+        return CreatedAtAction(nameof(GetById), new {id = item.Id} , mapper.Map<FoodItemDto>(item));
     }
 
     [HttpPut("{id}")]
@@ -100,7 +109,11 @@ public class FoodItemController(
         if (foodItem == null)
             return NotFound("Food item not found");
 
-        var checkPermissionMsg = await CheckOwnerPermission(foodItem.RestaurantId);
+        string senderPhone = User.FindFirstValue(ClaimTypes.NameIdentifier)!;
+
+        string? checkPermissionMsg =
+            await authService.CheckOwnerPermission(senderPhone, foodItem.RestaurantId);
+
         if (checkPermissionMsg != null)
             return BadRequest(checkPermissionMsg);
 
@@ -119,23 +132,8 @@ public class FoodItemController(
         foodItem.FoodCategoryId = category.Id;
         bool result = await foodItemRepository.SaveChangeAsync();
         if (!result)
-            return BadRequest("Error on saving");
+            return new EmptyResult();
 
         return Ok(mapper.Map<FoodItemDto>(foodItem));
-    }
-
-    private async Task<string?> CheckOwnerPermission(int restaurantId)
-    {
-        var senderPhone = User.FindFirstValue(ClaimTypes.NameIdentifier)!;
-        var sender = await userRepository.FindPhoneNumberExistsAsync(senderPhone);
-
-        if (sender == null)
-            return "Who tf are you?";
-
-        var restaurant = sender.OwnedRestaurant.FirstOrDefault(r => r.Id == restaurantId);
-        if (restaurant == null)
-            return "You don't own this restaurant";
-
-        return null;
     }
 }

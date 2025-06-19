@@ -16,14 +16,14 @@ public class UserController(IUserRepository userRepository,
 {
     [HttpGet]
     [Authorize(Policy = "AdminAccessLevel")]
-    public async Task<ActionResult<IEnumerable<User>>> GetUsers()
+    public async Task<ActionResult<IEnumerable<UserDto>>> GetUsers()
     {
         var userEntities = await userRepository.GetUsersAsync();
         return Ok(mapper.Map<IEnumerable<UserDto>>(userEntities));
     }
     
     [HttpGet("{userid}", Name = "GetUserById")]
-    public async Task<ActionResult<User>> GetUser(int userid)
+    public async Task<ActionResult<UserDto>> GetUser(int userid)
     {
         var userEntity = await userRepository.GetUserAsync(userid);
         if (userEntity == null)

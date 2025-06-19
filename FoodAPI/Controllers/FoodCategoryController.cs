@@ -22,9 +22,13 @@ public class FoodCategoryController(IFoodCategoryRepository foodCategoryReposito
     }
 
     [HttpGet("{id}")]
-    public async Task<ActionResult<FoodCategory>> GetById(int id)
+    public async Task<ActionResult<FoodCategoryDto>> GetById(int id)
     {
         var category = await foodCategoryRepository.GetCategoryAsync(id);
+
+        if (category == null)
+            return NotFound("No category with that id");
+
         return Ok(mapper.Map<FoodCategoryDto>(category));
     }
 }
