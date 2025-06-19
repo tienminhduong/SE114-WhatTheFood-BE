@@ -17,8 +17,9 @@ namespace FoodAPI.Interfaces
             string sortBy = ""
         );
         Task<FoodItem?> GetById(int id);
-        Task AddFoodItem(FoodItemDto item);
+        Task AddFoodItemAsync(FoodItem item);
         Task<bool> UpdateItem(FoodItem item);
         Task<bool> RemoveFoodItem(int id);
+        Task<bool> SaveChangeAsync();
     }
 }

@@ -54,7 +54,8 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme).AddJw
     });
 
 builder.Services.AddAuthorizationBuilder()
-    .AddPolicy("UserAccessLevel", policy => policy.RequireRole("Admin", "User"))
+    .AddPolicy("UserAccessLevel", policy => policy.RequireRole("Admin", "User", "Owner"))
+    .AddPolicy("OwnerAccessLevel", policy => policy.RequireRole("Admin", "Owner"))
     .AddPolicy("AdminAccessLevel", policy => policy.RequireRole("Admin"));
 
 var app = builder.Build();

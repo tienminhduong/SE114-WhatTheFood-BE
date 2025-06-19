@@ -8,25 +8,17 @@ namespace FoodAPI.Repositories
 {
     public class FoodItemRepository(FoodOrderContext dbContext) : IFoodItemRepository
     {
-        public async Task AddFoodItem(FoodItemDto item)
-        {
-            var foodItem = new FoodItem()
-            {
-                FoodName = item.FoodName,
-                Description = item.Description,
-                SoldAmount = item.SoldAmount,
-                Available = item.Available,
-                Price = item.Price,
-                FoodCategoryId = item.FoodCategory!.Id,
-                RestaurantId = item.Restaurant!.Id,
-            };
-
-            await dbContext.AddAsync(foodItem);
+        public async Task AddFoodItemAsync(FoodItem item)
+        { 
+            await dbContext.AddAsync(item);
         }
 
         public async Task<FoodItem?> GetById(int id)
         {
-            return await dbContext.FoodItems.FirstOrDefaultAsync(x => x.Id == id);
+            return await dbContext.FoodItems
+                .Include(f => f.FoodCategory)
+                .Include(f => f.Restaurant)
+                .FirstOrDefaultAsync(f => f.Id == id);
         }
 
         public async Task<IEnumerable<FoodItem>> GetItemsBy(
@@ -54,12 +46,37 @@ namespace FoodAPI.Repositories
                 .Include(food => food.FoodCategory)
                 .ToListAsync();
 
+            switch (sortBy)
+            {
+                case "priceAsc":
+                    foodItems = foodItems.OrderBy(f => f.Price).ToList();
+                    break;
+                case "priceDesc":
+                    foodItems = foodItems.OrderByDescending(f => f.Price).ToList();
+                    break;
+                case "soldAmountAsc":
+                    foodItems = foodItems.OrderBy(f => f.SoldAmount).ToList();
+                    break;
+                case "soldAmountDesc":
+                    foodItems = foodItems.OrderByDescending(f => f.SoldAmount).ToList();
+                    break;
+                case "":
+                    break;
+                default:
+                    throw new InvalidOperationException("Invalid sort criteria");
+            }
+
             return foodItems;
         }
 
         public Task<bool> RemoveFoodItem(int id)
         {
             throw new NotImplementedException();
+        }
+
+        public async Task<bool> SaveChangeAsync()
+        {
+            return await dbContext.SaveChangesAsync() > 0;
         }
 
         public Task<bool> UpdateItem(FoodItem item)

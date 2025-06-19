@@ -11,10 +11,9 @@ public class Restaurant
     [Required]
     [MaxLength(50)]
     public string Name { get; set; } = string.Empty;
-    
     public Address? Address { get; set; }
-    
-    public ICollection<FoodItem> FoodItems { get; set; } =  new List<FoodItem>();
-    
-    public ICollection<ShippingInfo> ShippingInfos { get; set; } =   new List<ShippingInfo>();
+    public int OwnerId { get; set; }
+    public User? Owner { get; set; }
+    public ICollection<FoodItem> FoodItems { get; set; } = new List<FoodItem>();
+    public ICollection<ShippingInfo> ShippingInfos { get; set; } = new List<ShippingInfo>();
 }

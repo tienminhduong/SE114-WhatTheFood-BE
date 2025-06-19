@@ -2,6 +2,7 @@
 {
     public class FoodItemDto
     {
+        public int Id { get; set; }
         public required string FoodName { get; set; }
         public string Description { get; set; } = string.Empty;
         public int SoldAmount { get; set; }

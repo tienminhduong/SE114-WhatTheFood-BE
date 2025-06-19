@@ -7,11 +7,16 @@ namespace FoodAPI.Repositories
 {
     public class FoodCategoryRepository(FoodOrderContext dbContext) : IFoodCategoryRepository
     {
-        public async Task AddCategoryAsync(string categoryName)
+        public async Task<FoodCategory?> AddCategoryAsync(string categoryName)
         {
-            FoodCategory category = new();
-            category.Name = categoryName;
-            await dbContext.FoodCategories.AddAsync(category);
+            await dbContext.FoodCategories.AddAsync(new FoodCategory { Name = categoryName });
+
+            bool result = await SaveChangesAsync();
+            if (!result)
+                return null;
+
+            var category = await GetCategoryByName(categoryName);
+            return category;
         }
 
         public async Task<IEnumerable<FoodCategory>> GetCategoriesAsync()
@@ -22,6 +27,11 @@ namespace FoodAPI.Repositories
         public async Task<FoodCategory?> GetCategoryAsync(int id)
         {
             return await dbContext.FoodCategories.FirstOrDefaultAsync(fc => fc.Id == id);
+        }
+
+        public async Task<FoodCategory?> GetCategoryByName(string categoryName)
+        {
+            return await dbContext.FoodCategories.FirstOrDefaultAsync(fc => fc.Name == categoryName);
         }
 
         public async Task<IEnumerable<FoodItem>> GetFoodOfCategoryAsync(int categoryId)
