@@ -7,5 +7,6 @@ namespace FoodAPI.Interfaces
     {
         Task<User?> RegisterAsync(UserForCreationDto userDto);
         Task<string?> LoginAsync(UserLoginDto userDto);
+        Task<string?> CheckOwnerPermission(string senderPhone, int restaurantId);
     }
 }

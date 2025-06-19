@@ -3,6 +3,7 @@ using FoodAPI.Entities;
 using FoodAPI.Interfaces;
 using FoodAPI.Models;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using System.IdentityModel.Tokens.Jwt;
@@ -70,6 +71,20 @@ namespace FoodAPI.Services
             );
 
             return new JwtSecurityTokenHandler().WriteToken(tokenDescription);
+        }
+
+        public async Task<string?> CheckOwnerPermission(string senderPhone, int restaurantId)
+        {
+            var sender = await userRepository.FindPhoneNumberExistsAsync(senderPhone);
+
+            if (sender == null)
+                return "Who tf are you?";
+
+            var restaurant = sender.OwnedRestaurant.FirstOrDefault(r => r.Id == restaurantId);
+            if (restaurant == null)
+                return "You don't own this restaurant";
+
+            return null;
         }
     }
 }
