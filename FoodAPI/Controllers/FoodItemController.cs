@@ -130,10 +130,8 @@ public class FoodItemController(
             return BadRequest("Error on creating new category");
 
         foodItem.FoodCategoryId = category.Id;
-        bool result = await foodItemRepository.SaveChangeAsync();
-        if (!result)
-            return new EmptyResult();
+        await foodItemRepository.SaveChangeAsync();
 
-        return Ok(mapper.Map<FoodItemDto>(foodItem));
+        return new EmptyResult();
     }
 }
