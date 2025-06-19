@@ -62,15 +62,9 @@ public class FoodItemController(
     [Authorize(Policy = "OwnerAccessLevel")]
     public async Task<ActionResult<FoodItemDto>> CreateNewItem(CreateFoodItemDto itemDto)
     {
-        var senderPhone = User.FindFirstValue(ClaimTypes.NameIdentifier)!;
-        var sender = await userRepository.FindPhoneNumberExistsAsync(senderPhone);
-
-        if (sender == null)
-            return BadRequest("Who tf are you?");
-
-        var restaurant = sender.OwnedRestaurant.FirstOrDefault(r => r.Id == itemDto.RestaurantId);
-        if (restaurant == null)
-            return BadRequest("You don't own this restaurant");
+        string? ownerPermissionCheckMsg = await CheckOwnerPermission(itemDto.RestaurantId);
+        if (ownerPermissionCheckMsg != null)
+            return BadRequest(ownerPermissionCheckMsg);
 
         var category = await foodCategoryRepository.GetCategoryByName(itemDto.CategoryName);
         category ??= await foodCategoryRepository.AddCategoryAsync(itemDto.CategoryName);
@@ -96,5 +90,52 @@ public class FoodItemController(
             return BadRequest("Error on saving");
 
         return Ok(mapper.Map<FoodItemDto>(item));
+    }
+
+    [HttpPut("{id}")]
+    [Authorize(Policy = "OwnerAccessLevel")]
+    public async Task<ActionResult<FoodItemDto>> UpdateFoodItem(int id, [FromBody]UpdateFoodItemDto itemDto)
+    {
+        var foodItem = await foodItemRepository.GetById(id);
+        if (foodItem == null)
+            return NotFound("Food item not found");
+
+        var checkPermissionMsg = await CheckOwnerPermission(foodItem.RestaurantId);
+        if (checkPermissionMsg != null)
+            return BadRequest(checkPermissionMsg);
+
+        foodItem.FoodName = itemDto.Name;
+        foodItem.Description = itemDto.Description;
+        foodItem.Price = itemDto.Price;
+        foodItem.SoldAmount = itemDto.SoldAmount;
+        foodItem.Available = itemDto.Available;
+
+        var category = await foodCategoryRepository.GetCategoryByName(itemDto.CategoryName);
+        category ??= await foodCategoryRepository.AddCategoryAsync(itemDto.CategoryName);
+
+        if (category == null)
+            return BadRequest("Error on creating new category");
+
+        foodItem.FoodCategoryId = category.Id;
+        bool result = await foodItemRepository.SaveChangeAsync();
+        if (!result)
+            return BadRequest("Error on saving");
+
+        return Ok(mapper.Map<FoodItemDto>(foodItem));
+    }
+
+    private async Task<string?> CheckOwnerPermission(int restaurantId)
+    {
+        var senderPhone = User.FindFirstValue(ClaimTypes.NameIdentifier)!;
+        var sender = await userRepository.FindPhoneNumberExistsAsync(senderPhone);
+
+        if (sender == null)
+            return "Who tf are you?";
+
+        var restaurant = sender.OwnedRestaurant.FirstOrDefault(r => r.Id == restaurantId);
+        if (restaurant == null)
+            return "You don't own this restaurant";
+
+        return null;
     }
 }
