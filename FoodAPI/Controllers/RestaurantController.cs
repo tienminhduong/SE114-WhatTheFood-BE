@@ -26,9 +26,13 @@ public class RestaurantController(
     }
 
     [HttpGet("{id}", Name = "GetRestaurant")]
-    public async Task<ActionResult<RestaurantDto>> GetRestaurant(int id)
+    public async Task<ActionResult<RestaurantDto>> GetRestaurant(int id, bool includeFoodItems = false)
     {
-        var restaurant = await restaurantRepository.GetRestaurantAsync(id);
+        var restaurant = await restaurantRepository.GetRestaurantAsync(id, includeFoodItems);
+        if (restaurant == null)
+            return NotFound();
+        if (includeFoodItems)
+            return Ok(mapper.Map<RestaurantWithFoodsDto>(restaurant));
         return Ok(mapper.Map<RestaurantDto>(restaurant));
     }
 
@@ -48,6 +52,10 @@ public class RestaurantController(
         var restaurantEntity = mapper.Map<Restaurant>(restaurant);
         if(addressName == null || longitude == null || latitude == null)
             return BadRequest();
+        addressName = addressName.Trim();
+        longitude = longitude.Trim();
+        latitude = latitude.Trim();
+        
         var addressEntity = new Address()
         {
             Name = addressName,

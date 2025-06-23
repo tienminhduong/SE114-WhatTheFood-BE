@@ -12,9 +12,16 @@ public class RestaurantRepository(FoodOrderContext foodOrderContext) : IRestaura
         return await foodOrderContext.Restaurants.ToListAsync();
     }
 
-    public async Task<Restaurant?> GetRestaurantAsync(int id)
+    public async Task<Restaurant?> GetRestaurantAsync(int id, bool includeFoodItems)
     {
-        return await foodOrderContext.Restaurants.FirstOrDefaultAsync(r => r.Id == id);
+        if (includeFoodItems)
+        {
+            return await foodOrderContext.Restaurants.Include(r => r.Address)
+                .Include(r => r.FoodItems)
+                .FirstOrDefaultAsync(r => r.Id == id);
+        }
+        return await foodOrderContext.Restaurants.Include(r => r.Address)
+            .FirstOrDefaultAsync(r => r.Id == id);
     }
 
     public async Task CreateRestaurantAsync(Restaurant restaurant)

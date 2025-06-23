@@ -12,7 +12,11 @@ public class UserProfile: Profile
         CreateMap<UserForCreationDto, User>();
         CreateMap<FoodCategory, FoodCategoryDto>();
         CreateMap<FoodItem, FoodItemDto>();
-        CreateMap<Restaurant, RestaurantDto>();
+        CreateMap<Entities.Restaurant, Models.RestaurantDto>()
+            .ForMember(dest => dest.AddressDto,
+                opt => opt.MapFrom(src => src.Address));
+        CreateMap<Restaurant, RestaurantWithFoodsDto>();
         CreateMap<CreateRestaurantDto, Restaurant>();
+        CreateMap<Address, AddressDto>();
     }
 }
