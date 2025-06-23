@@ -22,6 +22,7 @@ public class UserController(IUserRepository userRepository,
         return Ok(mapper.Map<IEnumerable<UserDto>>(userEntities));
     }
     
+    //The user data(loginuserdto) we give the api consumer doesn't have id field, but we require it when they call this :)? 
     [HttpGet("{userid}", Name = "GetUserById")]
     public async Task<ActionResult<UserDto>> GetUser(int userid)
     {
