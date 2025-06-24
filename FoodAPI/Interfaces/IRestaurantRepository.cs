@@ -5,7 +5,8 @@ namespace FoodAPI.Interfaces;
 public interface IRestaurantRepository
 {
     Task<IEnumerable<Restaurant>> GetRestaurantsAsync();
-    Task<Restaurant?> GetRestaurantAsync(int id, bool includeFoodItems);
+    Task<Restaurant?> GetRestaurantByIdAsync(int id, bool includeFoodItems);
     Task CreateRestaurantAsync(Restaurant restaurant);
+    Task<bool> CheckRestaurantExistAsync(int restaurantId);
     Task<bool> SaveChangesAsync();
 }

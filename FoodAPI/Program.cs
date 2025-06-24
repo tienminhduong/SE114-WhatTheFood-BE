@@ -39,6 +39,7 @@ builder.Services.AddScoped<IAuthService, AuthService>();
 builder.Services.AddScoped<IFoodCategoryRepository, FoodCategoryRepository>();
 builder.Services.AddScoped<IFoodItemRepository, FoodItemRepository>();
 builder.Services.AddScoped<IRestaurantRepository, RestaurantRepository>();
+builder.Services.AddScoped<IShippingInfoRepository, ShippingInfoRepository>();
 
 builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme).AddJwtBearer(
     options => {

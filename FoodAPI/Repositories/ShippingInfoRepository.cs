@@ -1,37 +1,62 @@
+using FoodAPI.DbContexts;
 using FoodAPI.Entities;
 using FoodAPI.Interfaces;
+using Microsoft.EntityFrameworkCore;
 
 namespace FoodAPI.Repositories;
 
-public class ShippingInfoRepository : IShippingInfoRepository
+public class ShippingInfoRepository(FoodOrderContext foodOrderContext) : IShippingInfoRepository
 {
-    public Task<IEnumerable<ShippingInfo>> GetAllUserOrderAsync()
+    public async Task<IEnumerable<ShippingInfo>> GetAllUserOrderAsync(int userId)
     {
-        throw new NotImplementedException();
+        return await foodOrderContext.ShippingInfos
+            .Where(si => si.UserId == userId)
+            .Include(si => si.Restaurant)
+            .ToListAsync();
     }
 
-    public Task<int> GetTotalRestaurantOrderAsync(int restaurantId)
+    public async Task<int> GetTotalRestaurantOrderAsync(int restaurantId)
     {
-        throw new NotImplementedException();
+        return await foodOrderContext.ShippingInfos
+            .Where(si => si.RestaurantId == restaurantId)
+            .CountAsync();
     }
 
-    public Task CreateShippingInfoAsync(ShippingInfo shippingInfo)
+    public async Task<ShippingInfo?> GetShippingInfoDetailsAsync(int shippingInfoId)
     {
-        throw new NotImplementedException();
+        return await foodOrderContext.ShippingInfos
+            .Include(si => si.Restaurant)
+            .Include(si => si.Address)
+            .Include(si => si.Rating)
+            .FirstOrDefaultAsync(si => si.Id == shippingInfoId);
     }
 
-    public Task AddArrivedTimeAsync(int shippingInfoId, DateTime arrivedTime)
+    public async Task<bool> ShippingInfoExistsAsync(int shippingInfoId)
     {
-        throw new NotImplementedException();
+        return await  foodOrderContext.ShippingInfos.AnyAsync(si => si.Id == shippingInfoId); 
     }
 
-    public Task AddRatingAsync(int shippingInfoId, Rating rating)
+    public async Task CreateShippingInfoAsync(ShippingInfo shippingInfo)
     {
-        throw new NotImplementedException();
+        await foodOrderContext.ShippingInfos.AddAsync(shippingInfo);
     }
 
-    public Task<bool> SaveChangesAsync()
+    public async Task AddArrivedTimeAsync(int shippingInfoId, DateTime arrivedTime)
     {
-        throw new NotImplementedException();
+        var shippingInfo = await foodOrderContext.ShippingInfos.FindAsync(shippingInfoId);
+        if (shippingInfo != null)
+            shippingInfo.ArrivedTime = arrivedTime;
+    }
+
+    public async Task AddRatingAsync(int shippingInfoId, Rating rating)
+    {
+        var shippingInfo = await foodOrderContext.ShippingInfos.FindAsync(shippingInfoId);
+        if (shippingInfo != null)
+            shippingInfo.Rating = rating;
+    }
+
+    public async Task<bool> SaveChangesAsync()
+    {
+        return (await foodOrderContext.SaveChangesAsync() > 0);
     }
 }

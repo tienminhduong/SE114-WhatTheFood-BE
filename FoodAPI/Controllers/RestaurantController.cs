@@ -26,9 +26,10 @@ public class RestaurantController(
     }
 
     [HttpGet("{id}", Name = "GetRestaurant")]
+    [Authorize(Policy = "UserAccessLevel")]
     public async Task<ActionResult<RestaurantDto>> GetRestaurant(int id, bool includeFoodItems = false)
     {
-        var restaurant = await restaurantRepository.GetRestaurantAsync(id, includeFoodItems);
+        var restaurant = await restaurantRepository.GetRestaurantByIdAsync(id, includeFoodItems);
         if (restaurant == null)
             return NotFound();
         if (includeFoodItems)
@@ -39,31 +40,16 @@ public class RestaurantController(
     
     [HttpPost]
     [Authorize(Policy = "UserAccessLevel")]
-    public async Task<ActionResult<RestaurantDto>> CreateRestaurant(
-        CreateRestaurantDto restaurant,
-        string? longitude,
-        string? latitude,
-        string? addressName)
+    public async Task<ActionResult<RestaurantDto>> CreateRestaurant(CreateRestaurantDto restaurant)
     {
         string senderPhone = User.FindFirstValue(ClaimTypes.NameIdentifier)!;
         var user = await userRepository.FindPhoneNumberExistsAsync(senderPhone);
         if (user == null)
             return NotFound();
-        var restaurantEntity = mapper.Map<Restaurant>(restaurant);
-        if(addressName == null || longitude == null || latitude == null)
-            return BadRequest();
-        addressName = addressName.Trim();
-        longitude = longitude.Trim();
-        latitude = latitude.Trim();
         
-        var addressEntity = new Address()
-        {
-            Name = addressName,
-            Longitude = Convert.ToDouble(longitude),
-            Latitude = Convert.ToDouble(latitude)
-        };
-        restaurantEntity.Address = addressEntity;
+        var restaurantEntity = mapper.Map<Restaurant>(restaurant);
         restaurantEntity.OwnerId = user.Id;
+        
         await restaurantRepository.CreateRestaurantAsync(restaurantEntity);
         if (!(await restaurantRepository.SaveChangesAsync()))
         {
