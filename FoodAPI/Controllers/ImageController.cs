@@ -35,7 +35,7 @@ public class ImageController(
             user.PfpUrl = user.PfpPublicId = null;
         }
 
-        var uploadResult = await imageService.UploadProfileImageAsync(file);
+        var uploadResult = await imageService.AddImageAsync(file, 300, 300);
         if (uploadResult.Error != null)
             return BadRequest(uploadResult.Error.Message);
 

@@ -4,8 +4,7 @@ namespace FoodAPI.Interfaces
 {
     public interface IImageService
     {
-        Task<ImageUploadResult> UploadProfileImageAsync(IFormFile file);
-        Task<ImageUploadResult> UploadBannerImageAsync(IFormFile file);
+        Task<ImageUploadResult> AddImageAsync(IFormFile file, int width, int height);
         Task<DeletionResult> DeleteImageAsync(string publicId);
     }
 }

@@ -18,18 +18,14 @@ namespace FoodAPI.Services
             return await cloudinary.DestroyAsync(deleteParams);
         }
 
-        public Task<ImageUploadResult> UploadBannerImageAsync(IFormFile file)
-        {
-            throw new NotImplementedException();
-        }
-
-        public async Task<ImageUploadResult> UploadProfileImageAsync(IFormFile file)
+        public async Task<ImageUploadResult> AddImageAsync(IFormFile file, int width, int height)
         {
             using var stream = file.OpenReadStream();
             var uploadParams = new ImageUploadParams()
             {
                 File = new FileDescription(file.FileName, stream),
-                AssetFolder = "onefourteenfood"
+                AssetFolder = "onefourteenfood",
+                Transformation = new Transformation().Width(width).Height(height).Crop("fill").Gravity("auto")
             };
             var uploadResult = await cloudinary.UploadAsync(uploadParams);
 

@@ -13,6 +13,5 @@ public class UserProfile: Profile
         CreateMap<FoodCategory, FoodCategoryDto>();
         CreateMap<FoodItem, FoodItemDto>();
         CreateMap<Restaurant, RestaurantDto>();
-        CreateMap<Image, UploadImgResultDto>();
     }
 }
