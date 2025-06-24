@@ -1,10 +1,11 @@
 using FoodAPI.Entities;
+using FoodAPI.Services;
 
 namespace FoodAPI.Interfaces;
 
 public interface IShippingInfoRepository
 {
-    Task<IEnumerable<ShippingInfo>> GetAllUserOrderAsync(int userId);
+    Task<(IEnumerable<ShippingInfo>,PaginationMetadata)> GetAllUserOrderAsync(int userId, int pageNumber, int pageSize);
     Task<int> GetTotalRestaurantOrderAsync(int restaurantId);
     Task<ShippingInfo?> GetShippingInfoDetailsAsync(int shippingInfoId);
     Task<bool> ShippingInfoExistsAsync(int shippingInfoId);

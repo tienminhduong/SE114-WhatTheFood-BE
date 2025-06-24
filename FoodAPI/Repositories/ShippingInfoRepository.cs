@@ -1,18 +1,28 @@
 using FoodAPI.DbContexts;
 using FoodAPI.Entities;
 using FoodAPI.Interfaces;
+using FoodAPI.Services;
 using Microsoft.EntityFrameworkCore;
 
 namespace FoodAPI.Repositories;
 
 public class ShippingInfoRepository(FoodOrderContext foodOrderContext) : IShippingInfoRepository
 {
-    public async Task<IEnumerable<ShippingInfo>> GetAllUserOrderAsync(int userId)
+    public async Task<(IEnumerable<ShippingInfo>,PaginationMetadata)> GetAllUserOrderAsync(
+        int userId, int pageNumber, int pageSize)
     {
-        return await foodOrderContext.ShippingInfos
-            .Where(si => si.UserId == userId)
+        var collection = foodOrderContext.ShippingInfos as  IQueryable<ShippingInfo>;
+        var totalItemCount = await collection.CountAsync();
+        var paginationMetadata = new PaginationMetadata(
+            totalItemCount, pageSize, pageNumber);
+        
+        var collectionToReturn = await collection
+            .OrderBy(si => si.OrderTime)
+            .Skip(pageSize * (pageNumber - 1))
+            .Take(pageSize)
             .Include(si => si.Restaurant)
             .ToListAsync();
+        return (collectionToReturn,paginationMetadata);
     }
 
     public async Task<int> GetTotalRestaurantOrderAsync(int restaurantId)

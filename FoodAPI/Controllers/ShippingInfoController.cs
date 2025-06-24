@@ -1,4 +1,5 @@
 using System.Security.Claims;
+using System.Text.Json;
 using AutoMapper;
 using FoodAPI.Entities;
 using FoodAPI.Interfaces;
@@ -17,15 +18,24 @@ public class ShippingInfoController(
     IMapper mapper
     ) : ControllerBase
 {
+    private const int MaxShippingInfoPageSize = 20;
+
+    
     [HttpGet]
     [Authorize(Policy = "UserAccessLevel")]
-    public async Task<ActionResult<IEnumerable<ShippingInfo>>> GetAllByUser()
+    public async Task<ActionResult<IEnumerable<ShippingInfo>>> GetAllByUser(
+        int pageNumber = 10, int pageSize = 10)
     {
+        if(pageSize > MaxShippingInfoPageSize)
+            pageSize = MaxShippingInfoPageSize;
         string senderPhone = User.FindFirstValue(ClaimTypes.NameIdentifier)!;
         var user = await userRepository.FindPhoneNumberExistsAsync(senderPhone);
         if (user == null)
             return NotFound();
-        var shippingInfo = shippingInfoRepository.GetAllUserOrderAsync(user.Id);
+        var (shippingInfo, paginationMetadata) = await shippingInfoRepository
+            .GetAllUserOrderAsync(user.Id, pageNumber, pageSize);
+
+        Response.Headers.Append("X-Pagination", JsonSerializer.Serialize(paginationMetadata));
         return Ok(mapper.Map<IEnumerable<ShippingInfo>>(shippingInfo));
     }
 
@@ -54,12 +64,15 @@ public class ShippingInfoController(
         var user = await userRepository.FindPhoneNumberExistsAsync(senderPhone);
         if (user == null)
             return NotFound();
+        
         var shippingInfoEntity = mapper.Map<ShippingInfo>(createShippingInfoDto);
         shippingInfoEntity.UserId = user.Id;
         await shippingInfoRepository.CreateShippingInfoAsync(shippingInfoEntity);
         if (!(await shippingInfoRepository.SaveChangesAsync()))
             return BadRequest();
+        
         var createdShippingInfo = mapper.Map<ShippingInfoDto>(shippingInfoEntity);
+        
         return CreatedAtRoute("GetShippingInfoById",
             new { shippingInfoId = createdShippingInfo.Id },
             createdShippingInfo);

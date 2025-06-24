@@ -6,6 +6,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Mvc;
 using System.Security.Claims;
+using System.Text.Json;
 
 namespace FoodAPI.Controllers;
 
@@ -17,6 +18,9 @@ public class FoodItemController(
     IAuthService authService,
     IMapper mapper) : ControllerBase
 {
+    private const int MaxRatingsPageSize = 20;
+
+    
     [HttpGet]
     [Authorize(Policy = "UserAccessLevel")]
     public async Task<ActionResult<IEnumerable<FoodItemDto>>> GetItemBy(
@@ -136,11 +140,16 @@ public class FoodItemController(
     }
 
     [HttpGet("{id}/ratings")]
-    public async Task<ActionResult<IEnumerable<RatingDto>>> GetRatingsByFoodItem(int id)
+    public async Task<ActionResult<IEnumerable<RatingDto>>> GetRatingsByFoodItem(
+        int id, int pageSize = 10, int pageNumber = 1)
     {
+        if(pageSize > MaxRatingsPageSize)
+            pageSize = MaxRatingsPageSize;
         if(!(await foodItemRepository.FoodItemExistsAsync(id)))
             return NotFound();
-        var ratings = await foodItemRepository.GetRatingsByFoodItemAsync(id);
+        var (ratings, paginationMetadata) = await foodItemRepository
+            .GetRatingsByFoodItemAsync(id, pageNumber, pageSize);
+        Response.Headers.Append("X-Pagination", JsonSerializer.Serialize(paginationMetadata));
         return Ok(mapper.Map<IEnumerable<RatingDto>>(ratings));
     }
 }

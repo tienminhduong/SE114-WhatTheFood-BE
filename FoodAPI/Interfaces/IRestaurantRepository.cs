@@ -1,4 +1,5 @@
 using FoodAPI.Entities;
+using FoodAPI.Services;
 
 namespace FoodAPI.Interfaces;
 
@@ -8,6 +9,7 @@ public interface IRestaurantRepository
     Task<Restaurant?> GetRestaurantByIdAsync(int id, bool includeFoodItems);
     Task CreateRestaurantAsync(Restaurant restaurant);
     Task<bool> CheckRestaurantExistAsync(int restaurantId);
-    Task<IEnumerable<Rating>> GetRatingsByRestaurantAsync(int restaurantId);
+    Task<(IEnumerable<Rating>,PaginationMetadata)> GetRatingsByRestaurantAsync(
+        int restaurantId, int pageNumber, int pageSize);
     Task<bool> SaveChangesAsync();
 }
