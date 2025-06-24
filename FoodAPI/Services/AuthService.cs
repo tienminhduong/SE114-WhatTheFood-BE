@@ -63,8 +63,8 @@ namespace FoodAPI.Services
             var creds = new SigningCredentials(key, SecurityAlgorithms.HmacSha512);
 
             var tokenDescription = new JwtSecurityToken(
-                issuer: config.GetValue<string>("AppSettings:Issuer"),
-                audience: config.GetValue<string>("AppSettings:Audience"),
+                issuer: config["AppSettings:Issuer"],
+                audience: config["AppSettings:Audience"],
                 claims: claims,
                 expires: DateTime.UtcNow.AddHours(1),
                 signingCredentials: creds

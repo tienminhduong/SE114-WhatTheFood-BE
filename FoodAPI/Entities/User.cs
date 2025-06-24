@@ -16,6 +16,8 @@ public class User
     [Required]
     public string PasswordHash { get; set; } = string.Empty;
     public string Role { get; set; } = "User";
+    public string? PfpPublicId { get; set; }
+    public string? PfpUrl { get; set; }
     public ICollection<Address> Addresses { get; set; } = new List<Address>();
     public ICollection<ShippingInfo> ShippingInfos { get; set; } = new List<ShippingInfo>();
     public ICollection<Restaurant> OwnedRestaurant { get; set; } = new List<Restaurant>();
