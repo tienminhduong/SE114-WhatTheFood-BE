@@ -34,6 +34,15 @@ public class RestaurantRepository(FoodOrderContext foodOrderContext) : IRestaura
         return await foodOrderContext.Restaurants.AnyAsync(r => r.Id == restaurantId);
     }
 
+    public async Task<IEnumerable<Rating>> GetRatingsByRestaurantAsync(int restaurantId)
+    {
+        var collections = foodOrderContext.Ratings as IQueryable<Rating>;
+        collections = collections.Where(
+            r => r.ShippingInfo != null 
+                 && r.ShippingInfo.RestaurantId == restaurantId);
+        return await  collections.ToListAsync();
+    }
+
     public async Task<bool> SaveChangesAsync()
     {
         return (await foodOrderContext.SaveChangesAsync()) > 0;

@@ -47,14 +47,15 @@ public class ShippingInfoController(
     }
 
     [HttpPost("order")]
-    // [Authorize(Policy = "UserAccessLevel")]
+    [Authorize(Policy = "UserAccessLevel")]
     public async Task<ActionResult<ShippingInfoDto>> CreateShippingInfo(CreateShippingInfoDto createShippingInfoDto)
     {
-        // string senderPhone = User.FindFirstValue(ClaimTypes.NameIdentifier)!;
-        // var user = await userRepository.FindPhoneNumberExistsAsync(senderPhone);
-        // if (user == null)
-        //     return NotFound();
+        string senderPhone = User.FindFirstValue(ClaimTypes.NameIdentifier)!;
+        var user = await userRepository.FindPhoneNumberExistsAsync(senderPhone);
+        if (user == null)
+            return NotFound();
         var shippingInfoEntity = mapper.Map<ShippingInfo>(createShippingInfoDto);
+        shippingInfoEntity.UserId = user.Id;
         await shippingInfoRepository.CreateShippingInfoAsync(shippingInfoEntity);
         if (!(await shippingInfoRepository.SaveChangesAsync()))
             return BadRequest();
@@ -62,5 +63,28 @@ public class ShippingInfoController(
         return CreatedAtRoute("GetShippingInfoById",
             new { shippingInfoId = createdShippingInfo.Id },
             createdShippingInfo);
+    }
+
+    [HttpPost("order/{shippingInfoId}")]
+    public async Task<ActionResult> CompleteOrder(int shippingInfoId, DateTime arrivedTime)
+    {
+        if(!(await shippingInfoRepository.ShippingInfoExistsAsync(shippingInfoId)))
+            return NotFound();
+        await shippingInfoRepository.AddArrivedTimeAsync(shippingInfoId, arrivedTime);
+        if (!(await shippingInfoRepository.SaveChangesAsync()))
+            return BadRequest();
+        return NoContent();
+    }
+
+    [HttpPost("order/{shippingInfoId}/rating")]
+    public async Task<ActionResult> AddRating(int shippingInfoId, RatingDto ratingDto)
+    {
+        if(!(await  shippingInfoRepository.ShippingInfoExistsAsync(shippingInfoId)))
+            return NotFound();
+        var ratingEntity = mapper.Map<Rating>(ratingDto);
+        await  shippingInfoRepository.AddRatingAsync(shippingInfoId, ratingEntity);
+        if (!(await shippingInfoRepository.SaveChangesAsync()))
+            return BadRequest();
+        return Created();
     }
 }

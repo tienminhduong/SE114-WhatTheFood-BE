@@ -39,5 +39,7 @@ public class UserProfile: Profile
             .ForMember(dest => dest.PaymentMethod,
                 opt => opt.MapFrom(src => Enum.Parse<PaymentMethod>(src.PaymentMethod)));
         CreateMap<CreateShippingInfoDetailDto, ShippingInfoDetail>();
+        CreateMap<RatingDto, Rating>();
+        CreateMap<Rating, RatingDto>();
     }
 }

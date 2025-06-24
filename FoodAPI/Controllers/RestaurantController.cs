@@ -60,4 +60,13 @@ public class RestaurantController(
             new { id = createdRestaurant.Id },
             createdRestaurant);
     }
+
+    [HttpGet("{restaurantId}/ratings")]
+    public async Task<ActionResult<IEnumerable<RatingDto>>> GetRatingsByRestaurant(int restaurantId)
+    {
+        if(!(await restaurantRepository.CheckRestaurantExistAsync(restaurantId)))
+            return NotFound();
+        var restaurantRatings = await restaurantRepository.GetRatingsByRestaurantAsync(restaurantId);
+        return Ok(mapper.Map<IEnumerable<RatingDto>>(restaurantRatings));
+    }
 }
