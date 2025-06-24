@@ -74,6 +74,20 @@ namespace FoodAPI.Repositories
             throw new NotImplementedException();
         }
 
+        public async Task<IEnumerable<Rating>> GetRatingsByFoodItemAsync(int foodItemId)
+        {
+            var collection = dbContext.Ratings as IQueryable<Rating>;
+            collection =  collection.Where(
+                r => r.ShippingInfo != null 
+                     && r.ShippingInfo.ShippingInfoDetails.Any(sid => sid.FoodItemId == foodItemId));
+            return await collection.ToListAsync();
+        }
+
+        public async Task<bool> FoodItemExistsAsync(int foodItemId)
+        {
+            return await dbContext.FoodItems.AnyAsync(f =>  f.Id == foodItemId);
+        }
+
         public async Task<bool> SaveChangeAsync()
         {
             return await dbContext.SaveChangesAsync() > 0;
