@@ -1,8 +1,11 @@
 ﻿using AutoMapper;
+using CloudinaryDotNet;
+using CloudinaryDotNet.Actions;
 using FoodAPI.Entities;
 using FoodAPI.Interfaces;
 using FoodAPI.Models;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using System.Security.Claims;
 
@@ -69,5 +72,22 @@ public class UserController(IUserRepository userRepository,
             return BadRequest("Who tf are you!");
 
         return Ok(mapper.Map<UserDto>(user));
+    }
+
+    [HttpPost("testimg")]
+    public async Task<ActionResult<string>> TestUploadImg(IFormFile file)
+    {
+        Cloudinary cloudinary = new(Environment.GetEnvironmentVariable("CLOUDINARY_URL"));
+        cloudinary.Api.Secure = true;
+
+        using var stream = file.OpenReadStream();
+        var uploadParams = new ImageUploadParams()
+        {
+            File = new FileDescription(file.FileName, stream),
+            AssetFolder = "food"
+        };
+        var uploadResult = await cloudinary.UploadAsync(uploadParams);
+
+        return Ok(uploadResult.SecureUrl.AbsoluteUri);
     }
 }

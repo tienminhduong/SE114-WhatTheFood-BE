@@ -1,5 +1,7 @@
 using System;
 using System.Text;
+using CloudinaryDotNet;
+using dotenv.net;
 using FoodAPI.DbContexts;
 using FoodAPI.Interfaces;
 using FoodAPI.Repositories;
@@ -11,6 +13,8 @@ using Scalar.AspNetCore;
 using Serilog;
 
 var builder = WebApplication.CreateBuilder(args);
+
+DotEnv.Load(options: new DotEnvOptions(probeForEnv: true));
 
 //Add SeriLog for better log information
 Log.Logger = new LoggerConfiguration()
