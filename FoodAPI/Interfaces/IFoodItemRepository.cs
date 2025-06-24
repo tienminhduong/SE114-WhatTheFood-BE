@@ -20,6 +20,8 @@ namespace FoodAPI.Interfaces
         Task AddFoodItemAsync(FoodItem item);
         Task<bool> UpdateItem(FoodItem item);
         Task<bool> RemoveFoodItem(int id);
+        Task<IEnumerable<Rating>> GetRatingsByFoodItemAsync(int foodItemId);
+        Task<bool> FoodItemExistsAsync(int foodItemId);
         Task<bool> SaveChangeAsync();
     }
 }

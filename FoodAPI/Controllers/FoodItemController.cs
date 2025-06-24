@@ -134,4 +134,13 @@ public class FoodItemController(
 
         return new EmptyResult();
     }
+
+    [HttpGet("{id}/ratings")]
+    public async Task<ActionResult<IEnumerable<RatingDto>>> GetRatingsByFoodItem(int id)
+    {
+        if(!(await foodItemRepository.FoodItemExistsAsync(id)))
+            return NotFound();
+        var ratings = await foodItemRepository.GetRatingsByFoodItemAsync(id);
+        return Ok(mapper.Map<IEnumerable<RatingDto>>(ratings));
+    }
 }
