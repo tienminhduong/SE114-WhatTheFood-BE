@@ -12,8 +12,8 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace FoodAPI.Migrations
 {
     [DbContext(typeof(FoodOrderContext))]
-    [Migration("20250624190044_AddImage")]
-    partial class AddImage
+    [Migration("20250624202332_FixPfpName")]
+    partial class FixPfpName
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -260,6 +260,12 @@ namespace FoodAPI.Migrations
 
                     b.Property<string>("PasswordHash")
                         .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("PfpPublicId")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("PfpUrl")
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("PhoneNumber")
