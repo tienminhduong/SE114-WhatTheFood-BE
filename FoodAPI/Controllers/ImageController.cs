@@ -45,4 +45,27 @@ public class ImageController(
         await userRepository.SaveChangesAsync();
         return Ok(mapper.Map<UserDto>(user));
     }
+
+    [Authorize(Policy = "UserAccessLevel")]
+    [HttpDelete("profile")]
+    public async Task<ActionResult> DeleteUserProfileImg()
+    {
+        string senderPhone = User.FindFirstValue(ClaimTypes.NameIdentifier)!;
+        var user = await userRepository.FindPhoneNumberExistsAsync(senderPhone);
+
+        if (user == null)
+            return BadRequest("Who tf are you");
+
+        if (user.PfpPublicId != null)
+        {
+            var deleteResult = await imageService.DeleteImageAsync(user.PfpPublicId);
+            if (deleteResult.Error != null)
+                return BadRequest(deleteResult.Error.Message);
+
+            user.PfpUrl = user.PfpPublicId = null;
+        }
+        await userRepository.SaveChangesAsync();
+
+        return NoContent();
+    }
 }
