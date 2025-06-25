@@ -50,11 +50,13 @@ public class UserController(IUserRepository userRepository,
     }
 
     [HttpPost("login")]
-    public async Task<ActionResult<string>> LoginUser(UserLoginDto userLogin)
+    public async Task<ActionResult<LoginTokenDto>> LoginUser(UserLoginDto userLogin)
     {
-        string? token = await authService.LoginAsync(userLogin);
-        if (token == null)
+        string? accessToken = await authService.LoginAsync(userLogin);
+        if (accessToken == null)
             return BadRequest("Username or password is not correct");
+
+        var token = new LoginTokenDto { AccessToken = accessToken };
 
         return Ok(token);
     }
