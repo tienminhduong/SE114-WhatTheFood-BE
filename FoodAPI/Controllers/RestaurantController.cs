@@ -42,7 +42,7 @@ public class RestaurantController(
 
     
     [HttpPost]
-    [Authorize(Policy = "UserAccessLevel")]
+    [Authorize(Policy = "OwnerAccessLevel")]
     public async Task<ActionResult<RestaurantDto>> CreateRestaurant(CreateRestaurantDto restaurant)
     {
         string senderPhone = User.FindFirstValue(ClaimTypes.NameIdentifier)!;

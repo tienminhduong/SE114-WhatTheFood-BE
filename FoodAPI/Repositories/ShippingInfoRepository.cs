@@ -20,9 +20,22 @@ public class ShippingInfoRepository(FoodOrderContext foodOrderContext) : IShippi
             .OrderBy(si => si.OrderTime)
             .Skip(pageSize * (pageNumber - 1))
             .Take(pageSize)
-            .Include(si => si.Restaurant)
             .ToListAsync();
         return (collectionToReturn,paginationMetadata);
+    }
+
+    public async Task<IEnumerable<ShippingInfo>> GetAllUserPendingOrdersAsync(int userId)
+    {
+        return await foodOrderContext.ShippingInfos
+            .Where(si => si.UserId == userId && si.ArrivedTime == null)
+            .ToListAsync();
+    }
+
+    public async Task<IEnumerable<ShippingInfo>> GetAllUserCompletedOrdersAsync(int userId)
+    {
+        return await foodOrderContext.ShippingInfos
+            .Where(si => si.UserId == userId && si.ArrivedTime != null)
+            .ToListAsync();    
     }
 
     public async Task<int> GetTotalRestaurantOrderAsync(int restaurantId)
@@ -35,7 +48,8 @@ public class ShippingInfoRepository(FoodOrderContext foodOrderContext) : IShippi
     public async Task<ShippingInfo?> GetShippingInfoDetailsAsync(int shippingInfoId)
     {
         return await foodOrderContext.ShippingInfos
-            .Include(si => si.Restaurant)
+            .Include(si => si.ShippingInfoDetails).ThenInclude(sid => sid.FoodItem)
+            .Include(si => si.Restaurant).ThenInclude(r => r!.Address)
             .Include(si => si.Address)
             .Include(si => si.Rating)
             .FirstOrDefaultAsync(si => si.Id == shippingInfoId);
