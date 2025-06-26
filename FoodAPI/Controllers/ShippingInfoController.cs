@@ -1,4 +1,5 @@
 using System.Security.Claims;
+using System.Text.Json;
 using AutoMapper;
 using FoodAPI.Entities;
 using FoodAPI.Interfaces;
@@ -17,33 +18,70 @@ public class ShippingInfoController(
     IMapper mapper
     ) : ControllerBase
 {
+    private const int MaxShippingInfoPageSize = 20;
+
+    
     [HttpGet]
     [Authorize(Policy = "UserAccessLevel")]
-    public async Task<ActionResult<IEnumerable<ShippingInfo>>> GetAllByUser()
+    public async Task<ActionResult<IEnumerable<ShippingInfo>>> GetAllByUser(
+        int pageNumber = 1, int pageSize = 10)
+    {
+        if(pageSize > MaxShippingInfoPageSize)
+            pageSize = MaxShippingInfoPageSize;
+        string senderPhone = User.FindFirstValue(ClaimTypes.NameIdentifier)!;
+        var user = await userRepository.FindPhoneNumberExistsAsync(senderPhone);
+        if (user == null)
+            return NotFound();
+        var (shippingInfo, paginationMetadata) = await shippingInfoRepository
+            .GetAllUserOrderAsync(user.Id, pageNumber, pageSize);
+
+        Response.Headers.Append("X-Pagination", JsonSerializer.Serialize(paginationMetadata));
+        return Ok(mapper.Map<IEnumerable<ShippingInfoGetAllByUserDto>>(shippingInfo));
+    }
+
+    [HttpGet("pending")]
+    [Authorize(Policy = "UserAccessLevel")]
+    public async Task<ActionResult<IEnumerable<ShippingInfoDto>>> GetAllPendingOrdersByUser()
     {
         string senderPhone = User.FindFirstValue(ClaimTypes.NameIdentifier)!;
         var user = await userRepository.FindPhoneNumberExistsAsync(senderPhone);
         if (user == null)
             return NotFound();
-        var shippingInfo = shippingInfoRepository.GetAllUserOrderAsync(user.Id);
-        return Ok(mapper.Map<IEnumerable<ShippingInfo>>(shippingInfo));
-    }
+        var shippingInfoEntities = await shippingInfoRepository
+            .GetAllUserPendingOrdersAsync(user.Id);
+        return Ok(mapper.Map<IEnumerable<ShippingInfoGetAllByUserDto>>(shippingInfoEntities));
+    } 
+    
+    [HttpGet("completed")]
+    [Authorize(Policy = "UserAccessLevel")]
+    public async Task<ActionResult<IEnumerable<ShippingInfoDto>>> GetAllCompletedOrdersByUser()
+    {
+        string senderPhone = User.FindFirstValue(ClaimTypes.NameIdentifier)!;
+        var user = await userRepository.FindPhoneNumberExistsAsync(senderPhone);
+        if (user == null)
+            return NotFound();
+        var shippingInfoEntities = await shippingInfoRepository
+            .GetAllUserCompletedOrdersAsync(user.Id);
+        return Ok(mapper.Map<IEnumerable<ShippingInfoGetAllByUserDto>>(shippingInfoEntities));
+    } 
 
     [HttpGet("{restaurantId}/total")]
     public async Task<ActionResult<int>> GetTotalRestaurantOrder(int restaurantId)
     {
         if(!(await restaurantRepository.CheckRestaurantExistAsync(restaurantId)))
             return NotFound();
-        return await shippingInfoRepository.GetTotalRestaurantOrderAsync(restaurantId);
+        
+        var total = await shippingInfoRepository.GetTotalRestaurantOrderAsync(restaurantId);
+        return Ok(total);
     }
 
-    [HttpGet("{shippingInfoId}", Name = "GetShippingInfoById")]
+    [HttpGet("detail/{shippingInfoId}", Name = "GetShippingInfoById")]
     public async Task<ActionResult<ShippingInfo>> GetShippingInfoDetails(int shippingInfoId)
     {
-        if(!(await restaurantRepository.CheckRestaurantExistAsync(shippingInfoId)))
+        if(!(await shippingInfoRepository.ShippingInfoExistsAsync(shippingInfoId)))
             return NotFound();
-        var shippingInfo = shippingInfoRepository.GetShippingInfoDetailsAsync(shippingInfoId);
-        return Ok(mapper.Map<ShippingInfoDetailDto>(shippingInfo));
+        var shippingInfo = await shippingInfoRepository.GetShippingInfoDetailsAsync(shippingInfoId);
+        return Ok(mapper.Map<ShippingInfoDto>(shippingInfo));
     }
 
     [HttpPost("order")]
@@ -54,12 +92,15 @@ public class ShippingInfoController(
         var user = await userRepository.FindPhoneNumberExistsAsync(senderPhone);
         if (user == null)
             return NotFound();
+        
         var shippingInfoEntity = mapper.Map<ShippingInfo>(createShippingInfoDto);
         shippingInfoEntity.UserId = user.Id;
         await shippingInfoRepository.CreateShippingInfoAsync(shippingInfoEntity);
         if (!(await shippingInfoRepository.SaveChangesAsync()))
             return BadRequest();
+        
         var createdShippingInfo = mapper.Map<ShippingInfoDto>(shippingInfoEntity);
+        
         return CreatedAtRoute("GetShippingInfoById",
             new { shippingInfoId = createdShippingInfo.Id },
             createdShippingInfo);

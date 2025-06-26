@@ -2,6 +2,7 @@
 using FoodAPI.Entities;
 using FoodAPI.Interfaces;
 using FoodAPI.Models;
+using FoodAPI.Services;
 using Microsoft.EntityFrameworkCore;
 
 namespace FoodAPI.Repositories
@@ -74,13 +75,20 @@ namespace FoodAPI.Repositories
             throw new NotImplementedException();
         }
 
-        public async Task<IEnumerable<Rating>> GetRatingsByFoodItemAsync(int foodItemId)
+        public async Task<(IEnumerable<Rating>,PaginationMetadata)> GetRatingsByFoodItemAsync(
+            int foodItemId, int pageNumber, int pageSize)
         {
             var collection = dbContext.Ratings as IQueryable<Rating>;
-            collection =  collection.Where(
-                r => r.ShippingInfo != null 
-                     && r.ShippingInfo.ShippingInfoDetails.Any(sid => sid.FoodItemId == foodItemId));
-            return await collection.ToListAsync();
+            var totalItemCount = await collection.CountAsync();
+            var paginationMetadata = new PaginationMetadata(totalItemCount, pageSize, pageNumber);
+            var collectionToReturn = await collection
+                .Where(r => r.ShippingInfo != null 
+                            && r.ShippingInfo.ShippingInfoDetails.Any(sid => sid.FoodItemId == foodItemId))
+                .OrderBy(r => r.RatingTime)
+                .Skip(pageSize * (pageNumber - 1))
+                .Take(pageSize)
+                .ToListAsync();
+            return (collectionToReturn, paginationMetadata);
         }
 
         public async Task<bool> FoodItemExistsAsync(int foodItemId)

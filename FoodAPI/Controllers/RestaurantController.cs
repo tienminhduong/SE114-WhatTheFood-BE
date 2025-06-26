@@ -1,4 +1,5 @@
 using System.Security.Claims;
+using System.Text.Json;
 using AutoMapper;
 using FoodAPI.Entities;
 using FoodAPI.Interfaces;
@@ -17,6 +18,8 @@ public class RestaurantController(
     IAuthService authService
     ) : ControllerBase
 {
+    private const int MaxRatingsPageSize = 20;
+
     [HttpGet]
     [Authorize(Policy = "AdminAccessLevel")]
     public async Task<ActionResult<IEnumerable<RestaurantDto>>> GetAllRestaurants()
@@ -39,7 +42,7 @@ public class RestaurantController(
 
     
     [HttpPost]
-    [Authorize(Policy = "UserAccessLevel")]
+    [Authorize(Policy = "OwnerAccessLevel")]
     public async Task<ActionResult<RestaurantDto>> CreateRestaurant(CreateRestaurantDto restaurant)
     {
         string senderPhone = User.FindFirstValue(ClaimTypes.NameIdentifier)!;
@@ -62,11 +65,16 @@ public class RestaurantController(
     }
 
     [HttpGet("{restaurantId}/ratings")]
-    public async Task<ActionResult<IEnumerable<RatingDto>>> GetRatingsByRestaurant(int restaurantId)
+    public async Task<ActionResult<IEnumerable<RatingDto>>> GetRatingsByRestaurant(
+        int restaurantId, int pageNumber = 1, int pageSize = 10)
     {
+        if (pageSize >  MaxRatingsPageSize)
+            pageSize = MaxRatingsPageSize;
         if(!(await restaurantRepository.CheckRestaurantExistAsync(restaurantId)))
             return NotFound();
-        var restaurantRatings = await restaurantRepository.GetRatingsByRestaurantAsync(restaurantId);
+        var (restaurantRatings, paginationMetadata) = await restaurantRepository
+            .GetRatingsByRestaurantAsync(restaurantId, pageNumber, pageSize);
+        Response.Headers.Append("X-Pagination", JsonSerializer.Serialize(paginationMetadata));
         return Ok(mapper.Map<IEnumerable<RatingDto>>(restaurantRatings));
     }
 }
