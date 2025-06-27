@@ -31,7 +31,7 @@ namespace FoodAPI.Services
         {
             User? u = await userRepository.FindPhoneNumberExistsAsync(userDto.PhoneNumber);
             if (u != null)
-                throw new ArgumentException("Phone number already exists!", nameof(userDto.PhoneNumber));
+                throw new ArgumentException("Phone number already exists!");
 
 
             User user = new();
@@ -40,6 +40,11 @@ namespace FoodAPI.Services
             user.PhoneNumber = userDto.PhoneNumber;
             user.PasswordHash = passwordHash;
             user.Name = userDto.Name;
+
+            if (userDto.Role != "Owner" && userDto.Role != "User")
+                throw new ArgumentException("Role not exists!");
+
+            user.Role = userDto.Role;
 
             userRepository.AddUser(user);
             bool result = await userRepository.SaveChangesAsync();
