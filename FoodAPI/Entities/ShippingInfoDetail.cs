@@ -10,6 +10,8 @@ public class ShippingInfoDetail
     public int Id { get; set; }
     [Required]
     public int Amount { get; set; }
+
+    public int FoodItemPriceAtOrderTime { get; set; }
     
     public int ShippingInfoId { get; set; }
     public ShippingInfo? ShippingInfo { get; set; }
