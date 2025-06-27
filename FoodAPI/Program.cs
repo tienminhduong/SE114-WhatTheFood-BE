@@ -1,4 +1,5 @@
 using System;
+using System.Net;
 using System.Text;
 using FoodAPI.DbContexts;
 using FoodAPI.Interfaces;
@@ -18,6 +19,11 @@ Log.Logger = new LoggerConfiguration()
     .WriteTo.Console()
     .CreateLogger();
 builder.Host.UseSerilog();
+
+builder.WebHost.ConfigureKestrel(options => {
+    options.Listen(IPAddress.Any, 5087);
+    options.Listen(IPAddress.Any, 7208);
+});
 
 // Add services to the container.
 builder.Services.AddControllers();
@@ -69,8 +75,6 @@ if (app.Environment.IsDevelopment())
     app.MapOpenApi();
     app.MapScalarApiReference();
 }
-
-app.UseHttpsRedirection();
 
 app.MapControllers();
 

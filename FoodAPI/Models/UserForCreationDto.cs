@@ -10,4 +10,5 @@ public class UserForCreationDto
     public required string Password { get; set; }
 
     public string? Name { get; set; }
+    public required string Role { get; set; }
 }
