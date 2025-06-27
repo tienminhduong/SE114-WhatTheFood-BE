@@ -57,26 +57,44 @@ public class ShippingInfoRepository(FoodOrderContext foodOrderContext) : IShippi
 
     public async Task<bool> ShippingInfoExistsAsync(int shippingInfoId)
     {
-        return await  foodOrderContext.ShippingInfos.AnyAsync(si => si.Id == shippingInfoId); 
+        return await foodOrderContext.ShippingInfos.AnyAsync(si => si.Id == shippingInfoId); 
+    }
+
+    public async Task<string> ShippingInfoBelongsToUserOrExistsAsync(int shippingInfoId, int? userId)
+    {
+        bool valid = await  foodOrderContext.ShippingInfos.AnyAsync(si => si.Id == shippingInfoId);
+        if(!valid)
+            return String.Empty;
+        if (userId == null)
+            return "found";
+        valid = await  foodOrderContext.ShippingInfos.AnyAsync(
+            si => si.Id == shippingInfoId && si.UserId == userId);
+        if (valid)
+            return "matched";
+        return "not matched";
     }
 
     public async Task CreateShippingInfoAsync(ShippingInfo shippingInfo)
     {
+        shippingInfo.OrderTime = DateTime.Now;
         await foodOrderContext.ShippingInfos.AddAsync(shippingInfo);
     }
 
-    public async Task AddArrivedTimeAsync(int shippingInfoId, DateTime arrivedTime)
+    public async Task AddArrivedTimeAsync(int shippingInfoId)
     {
         var shippingInfo = await foodOrderContext.ShippingInfos.FindAsync(shippingInfoId);
         if (shippingInfo != null)
-            shippingInfo.ArrivedTime = arrivedTime;
+            shippingInfo.ArrivedTime = DateTime.Now;
     }
 
     public async Task AddRatingAsync(int shippingInfoId, Rating rating)
     {
         var shippingInfo = await foodOrderContext.ShippingInfos.FindAsync(shippingInfoId);
         if (shippingInfo != null)
+        {
+            rating.RatingTime = DateTime.Now;
             shippingInfo.Rating = rating;
+        }
     }
 
     public async Task<bool> SaveChangesAsync()
