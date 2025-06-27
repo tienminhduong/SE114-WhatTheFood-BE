@@ -5,9 +5,6 @@ namespace FoodAPI.Models;
 public class CreateShippingInfoDto
 {
     [Required]
-    public DateTime OrderTime { get; set; }
-    
-    [Required]
     public int TotalPrice { get; set; }
     
     public string? UserNote { get; set; }

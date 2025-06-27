@@ -16,6 +16,8 @@ public class FoodItem
     public int SoldAmount { get; set; } = 0;
     public bool Available { get; set; } = true;
     public int Price { get; set; } = 0;
+    public string? CldnrPublicId { get; set; }
+    public string? CldnrUrl { get; set; }
     
     public int FoodCategoryId { get; set; }
     public FoodCategory? FoodCategory { get; set; }

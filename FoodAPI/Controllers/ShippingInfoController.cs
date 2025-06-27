@@ -92,7 +92,8 @@ public class ShippingInfoController(
         var user = await userRepository.FindPhoneNumberExistsAsync(senderPhone);
         if (user == null)
             return NotFound();
-        
+        if (!(await restaurantRepository.CheckRestaurantExistAsync(createShippingInfoDto.RestaurantId)))
+            return NotFound();
         var shippingInfoEntity = mapper.Map<ShippingInfo>(createShippingInfoDto);
         shippingInfoEntity.UserId = user.Id;
         await shippingInfoRepository.CreateShippingInfoAsync(shippingInfoEntity);
@@ -107,23 +108,48 @@ public class ShippingInfoController(
     }
 
     [HttpPost("order/{shippingInfoId}")]
-    public async Task<ActionResult> CompleteOrder(int shippingInfoId, DateTime arrivedTime)
+    [Authorize(Policy = "UserAccessLevel")]
+    public async Task<ActionResult> CompleteOrder(int shippingInfoId)
     {
-        if(!(await shippingInfoRepository.ShippingInfoExistsAsync(shippingInfoId)))
+        string senderPhone = User.FindFirstValue(ClaimTypes.NameIdentifier)!;
+        var user = await userRepository.FindPhoneNumberExistsAsync(senderPhone);
+        if (user == null)
             return NotFound();
-        await shippingInfoRepository.AddArrivedTimeAsync(shippingInfoId, arrivedTime);
+        var result = await shippingInfoRepository.ShippingInfoBelongsToUserOrExistsAsync(shippingInfoId, user.Id);
+        switch (result)
+        {
+            case "":
+                return NotFound();
+            case "not matched":
+                return Forbid();
+        }
+
+        if(!(await shippingInfoRepository.AddArrivedTimeAsync(shippingInfoId)))
+            return BadRequest();
         if (!(await shippingInfoRepository.SaveChangesAsync()))
             return BadRequest();
         return NoContent();
     }
 
     [HttpPost("order/{shippingInfoId}/rating")]
+    [Authorize(Policy = "UserAccessLevel")]
     public async Task<ActionResult> AddRating(int shippingInfoId, RatingDto ratingDto)
     {
-        if(!(await  shippingInfoRepository.ShippingInfoExistsAsync(shippingInfoId)))
+        string senderPhone = User.FindFirstValue(ClaimTypes.NameIdentifier)!;
+        var user = await userRepository.FindPhoneNumberExistsAsync(senderPhone);
+        if (user == null)
             return NotFound();
+        var result = await shippingInfoRepository.ShippingInfoBelongsToUserOrExistsAsync(shippingInfoId, user.Id);
+        switch (result)
+        {
+            case "":
+                return NotFound();
+            case "not matched":
+                return Forbid();
+        }
         var ratingEntity = mapper.Map<Rating>(ratingDto);
-        await  shippingInfoRepository.AddRatingAsync(shippingInfoId, ratingEntity);
+        if(!(await shippingInfoRepository.AddRatingAsync(shippingInfoId, ratingEntity)))
+            return BadRequest();
         if (!(await shippingInfoRepository.SaveChangesAsync()))
             return BadRequest();
         return Created();
