@@ -92,7 +92,8 @@ public class ShippingInfoController(
         var user = await userRepository.FindPhoneNumberExistsAsync(senderPhone);
         if (user == null)
             return NotFound();
-        
+        if (!(await restaurantRepository.CheckRestaurantExistAsync(createShippingInfoDto.RestaurantId)))
+            return NotFound();
         var shippingInfoEntity = mapper.Map<ShippingInfo>(createShippingInfoDto);
         shippingInfoEntity.UserId = user.Id;
         await shippingInfoRepository.CreateShippingInfoAsync(shippingInfoEntity);
@@ -123,7 +124,8 @@ public class ShippingInfoController(
                 return Forbid();
         }
 
-        await shippingInfoRepository.AddArrivedTimeAsync(shippingInfoId);
+        if(!(await shippingInfoRepository.AddArrivedTimeAsync(shippingInfoId)))
+            return BadRequest();
         if (!(await shippingInfoRepository.SaveChangesAsync()))
             return BadRequest();
         return NoContent();
@@ -146,7 +148,8 @@ public class ShippingInfoController(
                 return Forbid();
         }
         var ratingEntity = mapper.Map<Rating>(ratingDto);
-        await  shippingInfoRepository.AddRatingAsync(shippingInfoId, ratingEntity);
+        if(!(await shippingInfoRepository.AddRatingAsync(shippingInfoId, ratingEntity)))
+            return BadRequest();
         if (!(await shippingInfoRepository.SaveChangesAsync()))
             return BadRequest();
         return Created();

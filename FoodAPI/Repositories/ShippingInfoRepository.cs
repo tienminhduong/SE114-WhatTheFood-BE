@@ -80,21 +80,29 @@ public class ShippingInfoRepository(FoodOrderContext foodOrderContext) : IShippi
         await foodOrderContext.ShippingInfos.AddAsync(shippingInfo);
     }
 
-    public async Task AddArrivedTimeAsync(int shippingInfoId)
+    public async Task<bool> AddArrivedTimeAsync(int shippingInfoId)
     {
         var shippingInfo = await foodOrderContext.ShippingInfos.FindAsync(shippingInfoId);
-        if (shippingInfo != null)
+        if (shippingInfo != null && shippingInfo.ArrivedTime == null)
+        {
             shippingInfo.ArrivedTime = DateTime.Now;
+            return true;
+        }
+        return false;
     }
 
-    public async Task AddRatingAsync(int shippingInfoId, Rating rating)
+    public async Task<bool> AddRatingAsync(int shippingInfoId, Rating rating)
     {
-        var shippingInfo = await foodOrderContext.ShippingInfos.FindAsync(shippingInfoId);
-        if (shippingInfo != null)
+        var shippingInfo = await foodOrderContext.ShippingInfos
+            .Include(si => si.Rating)
+            .FirstOrDefaultAsync(si => si.Id == shippingInfoId);
+        if (shippingInfo != null && shippingInfo.Rating == null)
         {
             rating.RatingTime = DateTime.Now;
             shippingInfo.Rating = rating;
+            return true;
         }
+        return false;
     }
 
     public async Task<bool> SaveChangesAsync()

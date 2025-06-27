@@ -11,6 +11,8 @@ public class Restaurant
     [Required]
     [MaxLength(50)]
     public string Name { get; set; } = string.Empty;
+    public string? CldnrPublicId { get; set; }
+    public string? CldnrUrl { get; set; }
     public Address? Address { get; set; }
     public int OwnerId { get; set; }
     public User? Owner { get; set; }

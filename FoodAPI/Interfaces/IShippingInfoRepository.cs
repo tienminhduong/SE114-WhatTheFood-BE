@@ -16,7 +16,7 @@ public interface IShippingInfoRepository
     Task<bool> ShippingInfoExistsAsync(int shippingInfoId);
     Task<string> ShippingInfoBelongsToUserOrExistsAsync(int shippingInfoId, int? userId);
     Task CreateShippingInfoAsync(ShippingInfo shippingInfo);
-    Task AddArrivedTimeAsync(int shippingInfoId);
-    Task AddRatingAsync(int shippingInfoId, Rating rating);
+    Task<bool> AddArrivedTimeAsync(int shippingInfoId);
+    Task<bool> AddRatingAsync(int shippingInfoId, Rating rating);
     Task<bool> SaveChangesAsync();
 }
