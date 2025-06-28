@@ -3,10 +3,7 @@ using System.ComponentModel.DataAnnotations;
 namespace FoodAPI.Models;
 
 public class CreateShippingInfoDto
-{
-    [Required]
-    public int TotalPrice { get; set; }
-    
+{   
     public string? UserNote { get; set; }
     
     [Required]

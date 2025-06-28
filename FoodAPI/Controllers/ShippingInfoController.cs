@@ -6,6 +6,7 @@ using FoodAPI.Interfaces;
 using FoodAPI.Models;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore.Metadata.Conventions;
 
 namespace FoodAPI.Controllers;
 
@@ -15,6 +16,7 @@ public class ShippingInfoController(
     IShippingInfoRepository shippingInfoRepository,
     IUserRepository userRepository,
     IRestaurantRepository restaurantRepository,
+    IFoodItemRepository foodItemRepository,
     IMapper mapper
     ) : ControllerBase
 {
@@ -94,8 +96,24 @@ public class ShippingInfoController(
             return NotFound();
         if (!(await restaurantRepository.CheckRestaurantExistAsync(createShippingInfoDto.RestaurantId)))
             return NotFound();
+
         var shippingInfoEntity = mapper.Map<ShippingInfo>(createShippingInfoDto);
         shippingInfoEntity.UserId = user.Id;
+
+        shippingInfoEntity.TotalPrice = 0;
+        foreach (var detail in createShippingInfoDto.ShippingInfoDetails)
+        {
+            var item = await foodItemRepository.GetById(detail.FoodItemId);
+            shippingInfoEntity.TotalPrice += item!.Price * detail.Amount;
+        }
+
+        foreach (var detail in shippingInfoEntity.ShippingInfoDetails)
+        {
+            var item = await foodItemRepository.GetById(detail.FoodItemId);
+            detail.FoodItemPriceAtOrderTime = item!.Price;
+            item.SoldAmount += detail.Amount;
+        }
+
         await shippingInfoRepository.CreateShippingInfoAsync(shippingInfoEntity);
         if (!(await shippingInfoRepository.SaveChangesAsync()))
             return BadRequest();
