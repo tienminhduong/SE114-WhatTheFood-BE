@@ -30,6 +30,8 @@ public class ShippingInfoRepository(FoodOrderContext foodOrderContext) : IShippi
     {
         return await foodOrderContext.ShippingInfos
             .Where(si => si.UserId == userId && si.ArrivedTime == null)
+            .Include(si => si.Restaurant)
+                .ThenInclude(r => r!.Address)
             .ToListAsync();
     }
 
@@ -37,6 +39,8 @@ public class ShippingInfoRepository(FoodOrderContext foodOrderContext) : IShippi
     {
         return await foodOrderContext.ShippingInfos
             .Where(si => si.UserId == userId && si.ArrivedTime != null)
+            .Include(si => si.Restaurant)
+                .ThenInclude (r => r!.Address)
             .ToListAsync();    
     }
 
