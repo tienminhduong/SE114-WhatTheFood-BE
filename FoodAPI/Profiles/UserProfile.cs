@@ -15,11 +15,9 @@ public class UserProfile: Profile
         //Food Mapper
         CreateMap<FoodCategory, FoodCategoryDto>();
         CreateMap<FoodItem, FoodItemDto>();
-        
+
         //Restaurant Mapper
-        CreateMap<Entities.Restaurant, Models.RestaurantDto>()
-            .ForMember(dest => dest.AddressDto,
-                opt => opt.MapFrom(src => src.Address));
+        CreateMap<Restaurant, RestaurantDto>();
         CreateMap<Restaurant, RestaurantWithFoodsDto>();
         CreateMap<CreateRestaurantDto, Restaurant>();
         
@@ -28,9 +26,7 @@ public class UserProfile: Profile
         CreateMap<AddressDto, Address>();
 
         //ShippingInfo Mapper
-        CreateMap<ShippingInfo, ShippingInfoGetAllByUserDto>()
-            .ForMember(dest => dest.RestaurantDto,
-                opt => opt.MapFrom(src => src.Restaurant));
+        CreateMap<ShippingInfo, ShippingInfoGetAllByUserDto>();
         CreateMap<ShippingInfoDetail, ShippingInfoDetailDto>();
         CreateMap<ShippingInfo, ShippingInfoDto>()
             .ForMember(dest => dest.PaymentMethod,

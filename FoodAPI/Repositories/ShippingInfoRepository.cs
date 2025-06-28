@@ -17,6 +17,8 @@ public class ShippingInfoRepository(FoodOrderContext foodOrderContext) : IShippi
             totalItemCount, pageSize, pageNumber);
         
         var collectionToReturn = await collection
+            .Include(si => si.Restaurant)
+                .ThenInclude(r => r!.Address)
             .OrderBy(si => si.OrderTime)
             .Skip(pageSize * (pageNumber - 1))
             .Take(pageSize)
