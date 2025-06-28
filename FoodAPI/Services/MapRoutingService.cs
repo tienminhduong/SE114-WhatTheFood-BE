@@ -1,18 +1,36 @@
 ﻿using FoodAPI.Interfaces;
+using FoodAPI.Models.HEREDto;
 using HERE.Api;
+using System.Text.Json;
 
 namespace FoodAPI.Services;
 
-public class MapRoutingService : IMapRoutingService
+public class MapRoutingService(IConfiguration config) : IMapRoutingService
 {
-    private string accessToken;
+    private string accessToken =
+        (new HereTokenFactory())
+        .CreateToken(HereCredentials.FromFile("credentials.properties")).AccessToken;
 
-    MapRoutingService()
+    public async Task<TravelSummary?> GetShortestDistance(
+        float latOrigin, float lngOrigin, float latArrival, float lngArrival)
     {
-        var cred = HereCredentials.FromFile("credentials.properties");
-        IHereTokenFactory hereTokenFactory = new HereTokenFactory();
-        HereToken token = hereTokenFactory.CreateToken(cred);
+        string? url = config["HEREMap:routingBaseUrl"]
+            ?? throw new Exception("No routing url found");
 
-        accessToken = token.AccessToken;
+        string @params = $"transportMode=car" +
+            $"&origin={latOrigin},{lngOrigin}" +
+            $"&destination={latArrival},{lngArrival}" +
+            "&return=travelSummary";
+        try
+        {
+            var result =
+                await HttpService.GetAsync<RouteFindingResultDto>(accessToken, $"{url}?{@params}");
+
+            return result?.routes?.FirstOrDefault()?.sections?.FirstOrDefault()?.travelSummary;
+        }
+        catch
+        {
+            return null;
+        }
     }
 }
