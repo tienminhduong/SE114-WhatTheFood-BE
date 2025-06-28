@@ -46,7 +46,7 @@ namespace FoodAPI.Services
 
             user.Role = userDto.Role;
 
-            userRepository.AddUser(user);
+            await userRepository.AddUserAsync(user);
             bool result = await userRepository.SaveChangesAsync();
 
             if (!result)
