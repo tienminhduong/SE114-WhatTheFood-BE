@@ -15,12 +15,6 @@ public class Address
     public double Longitude { get; set; }
     [Required]
     public double Latitude { get; set; }
-    [MaxLength(200)]
-    public string? Note { get; set; }
-    
     public int? UserId { get; set; }
     public User? User { get; set; }
-
-    public int? RestaurantId { get; set; }
-    public Restaurant? Restaurant { get; set; }
 }

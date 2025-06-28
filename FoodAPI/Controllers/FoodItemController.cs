@@ -2,6 +2,7 @@
 using FoodAPI.Entities;
 using FoodAPI.Interfaces;
 using FoodAPI.Models;
+using FoodAPI.Models.HEREDto;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Mvc;
@@ -16,6 +17,8 @@ public class FoodItemController(
     IFoodItemRepository foodItemRepository,
     IFoodCategoryRepository foodCategoryRepository,
     IAuthService authService,
+    IMapRoutingService mapRoutingService,
+    IRestaurantRepository restaurantRepository,
     IMapper mapper) : ControllerBase
 {
     private const int MaxRatingsPageSize = 20;
@@ -151,5 +154,14 @@ public class FoodItemController(
             .GetRatingsByFoodItemAsync(id, pageNumber, pageSize);
         Response.Headers.Append("X-Pagination", JsonSerializer.Serialize(paginationMetadata));
         return Ok(mapper.Map<IEnumerable<RatingDto>>(ratings));
+    }
+
+    [HttpGet("recommended/bylocation")]
+    public async Task<ActionResult<TravelSummary>> GetRecommendationByLocation(
+        float latitude = 0,
+        float longitude = 0
+        )
+    {
+        return Ok(await restaurantRepository.GetRestaurantsAsync());
     }
 }

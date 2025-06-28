@@ -10,7 +10,7 @@ public class RestaurantRepository(FoodOrderContext foodOrderContext) : IRestaura
 {
     public async Task<IEnumerable<Restaurant>> GetRestaurantsAsync()
     {
-        return await foodOrderContext.Restaurants.ToListAsync();
+        return await foodOrderContext.Restaurants.Include(r => r.Address).ToListAsync();
     }
 
     public async Task<Restaurant?> GetRestaurantByIdAsync(int id, bool includeFoodItems)
