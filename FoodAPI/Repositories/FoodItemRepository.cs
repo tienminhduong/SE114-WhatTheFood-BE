@@ -19,6 +19,7 @@ namespace FoodAPI.Repositories
             return await dbContext.FoodItems
                 .Include(f => f.FoodCategory)
                 .Include(f => f.Restaurant)
+                    .ThenInclude(r => r!.Address)
                 .FirstOrDefaultAsync(f => f.Id == id);
         }
 
@@ -44,6 +45,7 @@ namespace FoodAPI.Repositories
                 .Where(food => food.Price > priceHigherThan)
                 .Skip(offset).Take(pageSize)
                 .Include(food => food.Restaurant)
+                    .ThenInclude(res => res!.Address)
                 .Include(food => food.FoodCategory)
                 .ToListAsync();
 

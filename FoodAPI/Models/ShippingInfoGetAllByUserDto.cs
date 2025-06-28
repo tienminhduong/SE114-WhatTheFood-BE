@@ -6,6 +6,6 @@ public class ShippingInfoGetAllByUserDto
     public DateTime OrderTime { get; set; }
     public DateTime? ArrivedTime { get; set; }
     public int TotalPrice { get; set; }
-    public RestaurantDto? RestaurantDto { get; set; }
+    public RestaurantDto? Restaurant { get; set; }
     
 }

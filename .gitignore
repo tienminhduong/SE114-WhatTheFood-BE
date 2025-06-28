@@ -5,6 +5,7 @@
 
 # dotenv files
 .env
+credentials.properties
 
 # User-specific files
 *.rsuser
