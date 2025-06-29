@@ -1,18 +1,13 @@
-﻿using AutoMapper;
-using FoodAPI.DbContexts;
+﻿using FoodAPI.DbContexts;
 using FoodAPI.Entities;
 using FoodAPI.Interfaces;
 using FoodAPI.Models;
 using FoodAPI.Services;
-using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.EntityFrameworkCore;
-using System.Collections.Immutable;
 
 namespace FoodAPI.Repositories
 {
-    public class FoodItemRepository(FoodOrderContext dbContext,
-        IMapper mapper
-        ) : IFoodItemRepository
+    public class FoodItemRepository(FoodOrderContext dbContext) : IFoodItemRepository
     {
         public async Task AddFoodItemAsync(FoodItem item)
         { 

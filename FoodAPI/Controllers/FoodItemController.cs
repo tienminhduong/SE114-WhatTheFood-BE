@@ -170,61 +170,28 @@ public class FoodItemController(
         }
     }
 
+    private static IEnumerable<FoodRecommendDto> SearchByLocationResult { get; set; } = [];
+
     [HttpGet("recommended/bylocation")]
     public async Task<ActionResult<IEnumerable<FoodRecommendDto>>> GetRecommendationByLocation(
         double latitude = 0,
-        double longitude = 0
+        double longitude = 0,
+        int pageNumber = 0,
+        int pageSize = 10
         )
     {
-        double nearbyLimitDistance = 5; //5 km
-
         try
         {
-            var restaurantList = await restaurantRepository.GetRestaurantsAsync();
-            Dictionary<int, TravelSummary> nearbyRestaurant = [];
+            if (pageNumber == 0)
+                SearchByLocationResult = await mapRoutingService
+                    .GetRecommendFoodByLocation(latitude, longitude);
 
+            var result = SearchByLocationResult
+                .Skip(pageNumber * pageSize)
+                .Take(pageSize)
+                .ToList();
 
-            foreach (var r in restaurantList)
-            {
-                var summary = await mapRoutingService.GetShortestDistance(
-                    latitude,
-                    longitude,
-                    r.Address!.Latitude,
-                    r.Address!.Longitude);
-
-                if (summary == null)
-                    continue;
-
-                if (summary.length / 1000f <= nearbyLimitDistance)
-                    nearbyRestaurant.Add(r.Id, summary);
-            }
-
-
-            List<FoodRecommendDto> result = [];
-            foreach (var r in nearbyRestaurant)
-            {
-                var restaurant = (await restaurantRepository.GetRestaurantByIdAsync(r.Key,
-                    includeFoodItems: true))!;
-                foreach (var fi in restaurant.FoodItems)
-                {
-                    var item = new FoodRecommendDto
-                    {
-                        FoodId = fi.Id,
-                        ImgUrl = fi.CldnrUrl,
-                        Name = fi.FoodName,
-                        DistanceInKm = r.Value.length / 1000f,
-                        DistanceInTime = r.Value.duration / 60,
-                        Rating = 0
-                    };
-
-                    item.Rating = (await foodItemRepository.GetFoodItemAvgRating(fi.Id)).AvgRating;
-
-                    result.Add(item);
-                }
-            }
-
-            var sortedResult = result.OrderBy(r => r.DistanceInKm);
-            return Ok(sortedResult);
+            return Ok(result);
         }
         catch (Exception ex)
         {
