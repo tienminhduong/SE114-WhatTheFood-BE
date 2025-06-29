@@ -130,9 +130,6 @@ namespace FoodAPI.Repositories
         {
             var result = new FoodItemRatingDto
             {
-                FoodItemId = foodItemId,
-                FoodItem = mapper.Map<FoodItemDto>(await GetById(foodItemId) ??
-                    throw new ArgumentException("Food item id not found")),
                 Number = 0,
                 AvgRating = 0
             };
