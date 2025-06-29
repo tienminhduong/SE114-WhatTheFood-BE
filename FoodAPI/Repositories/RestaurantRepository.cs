@@ -50,7 +50,7 @@ public class RestaurantRepository(FoodOrderContext foodOrderContext) : IRestaura
             .Include(r => r.ShippingInfo)
                 .ThenInclude(si => si!.User)
             .ToListAsync();
-        return (collections, paginationMetadata);
+        return (collectionsToReturn, paginationMetadata);
     }
 
     public async Task<bool> SaveChangesAsync()
