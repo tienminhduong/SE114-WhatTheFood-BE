@@ -151,7 +151,7 @@ public class ShippingInfoController(
 
     [HttpPost("order/{shippingInfoId}/rating")]
     [Authorize(Policy = "UserAccessLevel")]
-    public async Task<ActionResult> AddRating(int shippingInfoId, RatingDto ratingDto)
+    public async Task<ActionResult> AddRating(int shippingInfoId, CreateRatingDto ratingDto)
     {
         string senderPhone = User.FindFirstValue(ClaimTypes.NameIdentifier)!;
         var user = await userRepository.FindPhoneNumberExistsAsync(senderPhone);
@@ -166,10 +166,17 @@ public class ShippingInfoController(
                 return Forbid();
         }
         var ratingEntity = mapper.Map<Rating>(ratingDto);
-        if(!(await shippingInfoRepository.AddRatingAsync(shippingInfoId, ratingEntity)))
-            return BadRequest();
-        if (!(await shippingInfoRepository.SaveChangesAsync()))
-            return BadRequest();
-        return Created();
+        try
+        {
+            if (!(await shippingInfoRepository.AddRatingAsync(shippingInfoId, ratingEntity)))
+                return BadRequest("Hello");
+            if (!(await shippingInfoRepository.SaveChangesAsync()))
+                return BadRequest("Hello1");
+            return Created();
+        }
+        catch (Exception ex)
+        {
+            return BadRequest(ex.Message);
+        }
     }
 }

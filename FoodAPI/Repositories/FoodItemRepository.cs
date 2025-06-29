@@ -1,13 +1,18 @@
-﻿using FoodAPI.DbContexts;
+﻿using AutoMapper;
+using FoodAPI.DbContexts;
 using FoodAPI.Entities;
 using FoodAPI.Interfaces;
 using FoodAPI.Models;
 using FoodAPI.Services;
+using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.EntityFrameworkCore;
+using System.Collections.Immutable;
 
 namespace FoodAPI.Repositories
 {
-    public class FoodItemRepository(FoodOrderContext dbContext) : IFoodItemRepository
+    public class FoodItemRepository(FoodOrderContext dbContext,
+        IMapper mapper
+        ) : IFoodItemRepository
     {
         public async Task AddFoodItemAsync(FoodItem item)
         { 
@@ -89,6 +94,8 @@ namespace FoodAPI.Repositories
                 .OrderBy(r => r.RatingTime)
                 .Skip(pageSize * (pageNumber - 1))
                 .Take(pageSize)
+                .Include(r => r.ShippingInfo)
+                    .ThenInclude(si => si!.User)
                 .ToListAsync();
             return (collectionToReturn, paginationMetadata);
         }
@@ -106,6 +113,36 @@ namespace FoodAPI.Repositories
         public Task<bool> UpdateItem(FoodItem item)
         {
             throw new NotImplementedException();
+        }
+
+        public async Task<IEnumerable<Rating>> GetRatingsByFoodItem(int foodItemId)
+        {
+            return await dbContext.Ratings
+                .Include(r => r.ShippingInfo)
+                    .ThenInclude(si => si!.ShippingInfoDetails)
+                .Where(
+                    r => r.ShippingInfo!.ShippingInfoDetails
+                    .FirstOrDefault(sd => sd.FoodItemId == foodItemId) != null
+                ).ToListAsync();
+        }
+
+        public async Task<FoodItemRatingDto> GetFoodItemAvgRating(int foodItemId)
+        {
+            var result = new FoodItemRatingDto
+            {
+                FoodItemId = foodItemId,
+                FoodItem = mapper.Map<FoodItemDto>(await GetById(foodItemId) ??
+                    throw new ArgumentException("Food item id not found")),
+                Number = 0,
+                AvgRating = 0
+            };
+
+            var ratings = await GetRatingsByFoodItem(foodItemId);
+
+            result.Number = ratings.Count();
+            result.AvgRating = (float)ratings.Sum(r => r.Star) / result.Number;
+
+            return result;
         }
     }
 }

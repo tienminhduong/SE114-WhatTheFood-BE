@@ -15,6 +15,6 @@ public class ShippingInfoDto
 
     public AddressDto? Address { get; set; }
 
-    public RatingDto? Rating { get; set; }
+    public CreateRatingDto? Rating { get; set; }
     
 }

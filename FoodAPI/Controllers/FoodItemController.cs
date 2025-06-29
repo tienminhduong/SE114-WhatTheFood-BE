@@ -143,7 +143,7 @@ public class FoodItemController(
     }
 
     [HttpGet("{id}/ratings")]
-    public async Task<ActionResult<IEnumerable<RatingDto>>> GetRatingsByFoodItem(
+    public async Task<ActionResult<IEnumerable<CreateRatingDto>>> GetRatingsByFoodItem(
         int id, int pageSize = 10, int pageNumber = 1)
     {
         if(pageSize > MaxRatingsPageSize)
@@ -153,15 +153,81 @@ public class FoodItemController(
         var (ratings, paginationMetadata) = await foodItemRepository
             .GetRatingsByFoodItemAsync(id, pageNumber, pageSize);
         Response.Headers.Append("X-Pagination", JsonSerializer.Serialize(paginationMetadata));
+
         return Ok(mapper.Map<IEnumerable<RatingDto>>(ratings));
     }
 
+    [HttpGet("{id}/ratings/summary")]
+    public async Task<ActionResult<FoodItemRatingDto>> TestGetRatings(int id)
+    {
+        try
+        {
+            FoodItemRatingDto ratings = await foodItemRepository.GetFoodItemAvgRating(id);
+            return Ok(ratings);
+        }
+        catch (Exception ex)
+        {
+            return BadRequest(ex.Message);
+        }
+    }
+
     [HttpGet("recommended/bylocation")]
-    public async Task<ActionResult<TravelSummary>> GetRecommendationByLocation(
-        float latitude = 0,
-        float longitude = 0
+    public async Task<ActionResult<IEnumerable<FoodRecommendDto>>> GetRecommendationByLocation(
+        double latitude = 0,
+        double longitude = 0
         )
     {
-        return Ok(await restaurantRepository.GetRestaurantsAsync());
+        double nearbyLimitDistance = 5; //5 km
+
+        try
+        {
+            var restaurantList = await restaurantRepository.GetRestaurantsAsync();
+            Dictionary<int, TravelSummary> nearbyRestaurant = [];
+
+
+            foreach (var r in restaurantList)
+            {
+                var summary = await mapRoutingService.GetShortestDistance(
+                    latitude,
+                    longitude,
+                    r.Address!.Latitude,
+                    r.Address!.Longitude);
+
+                if (summary == null)
+                    continue;
+
+                if (summary.length / 1000f <= nearbyLimitDistance)
+                    nearbyRestaurant.Add(r.Id, summary);
+            }
+
+
+            List<FoodRecommendDto> result = [];
+            foreach (var r in nearbyRestaurant)
+            {
+                var restaurant = (await restaurantRepository.GetRestaurantByIdAsync(r.Key,
+                    includeFoodItems: true))!;
+                foreach (var fi in restaurant.FoodItems)
+                {
+                    var item = new FoodRecommendDto
+                    {
+                        FoodId = fi.Id,
+                        ImgUrl = fi.CldnrUrl,
+                        Name = fi.FoodName,
+                        DistanceInKm = r.Value.length / 1000f,
+                        DistanceInTime = r.Value.duration / 60,
+                        Rating = 0,
+                    };
+
+                    result.Add(item);
+                }
+            }
+
+            var sortedResult = result.OrderBy(r => r.DistanceInKm);
+            return Ok(sortedResult);
+        }
+        catch (Exception ex)
+        {
+            return BadRequest(ex.Message);
+        }
     }
 }

@@ -26,6 +26,4 @@ public class ShippingInfo
     public ICollection<ShippingInfoDetail> ShippingInfoDetails { get; set; } = new List<ShippingInfoDetail>();
 
     public Address? Address { get; set; }
-
-    public Rating? Rating { get; set; }
 }
