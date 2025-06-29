@@ -23,6 +23,8 @@ namespace FoodAPI.Interfaces
         Task<bool> RemoveFoodItem(int id);
         Task<(IEnumerable<Rating>,PaginationMetadata)> GetRatingsByFoodItemAsync(int foodItemId, int pageNumber, int pageSize);
         Task<bool> FoodItemExistsAsync(int foodItemId);
+        Task<FoodItemRatingDto> GetFoodItemAvgRating(int foodItemId);
+        Task<IEnumerable<Rating>> GetRatingsByFoodItem(int foodItemId);
         Task<bool> SaveChangeAsync();
     }
 }

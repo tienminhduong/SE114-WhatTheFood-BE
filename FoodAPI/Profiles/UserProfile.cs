@@ -1,5 +1,6 @@
 ﻿using AutoMapper;
 using FoodAPI.Entities;
+using FoodAPI.Interfaces;
 using FoodAPI.Models;
 
 namespace FoodAPI.Profiles;
@@ -35,7 +36,12 @@ public class UserProfile: Profile
             .ForMember(dest => dest.PaymentMethod,
                 opt => opt.MapFrom(src => Enum.Parse<PaymentMethod>(src.PaymentMethod)));
         CreateMap<CreateShippingInfoDetailDto, ShippingInfoDetail>();
-        CreateMap<RatingDto, Rating>();
-        CreateMap<Rating, RatingDto>();
+        CreateMap<CreateRatingDto, Rating>();
+        CreateMap<Rating, CreateRatingDto>();
+        CreateMap<Rating, RatingDto>()
+            .ForMember(dest => dest.UserName,
+                opt => opt.MapFrom(src => src.ShippingInfo!.User!.Name))
+            .ForMember(dest => dest.UserPfp,
+                opt => opt.MapFrom(src => src.ShippingInfo!.User!.PfpUrl));
     }
 }
