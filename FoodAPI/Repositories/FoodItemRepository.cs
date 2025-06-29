@@ -138,8 +138,10 @@ namespace FoodAPI.Repositories
             };
 
             var ratings = await GetRatingsByFoodItem(foodItemId);
-
             result.Number = ratings.Count();
+            if (result.Number == 0)
+                return result;
+
             result.AvgRating = (float)ratings.Sum(r => r.Star) / result.Number;
 
             return result;

@@ -4,7 +4,6 @@ using FoodAPI.Interfaces;
 using FoodAPI.Models;
 using FoodAPI.Models.HEREDto;
 using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Mvc;
 using System.Security.Claims;
 using System.Text.Json;
@@ -215,8 +214,10 @@ public class FoodItemController(
                         Name = fi.FoodName,
                         DistanceInKm = r.Value.length / 1000f,
                         DistanceInTime = r.Value.duration / 60,
-                        Rating = 0,
+                        Rating = 0
                     };
+
+                    item.Rating = (await foodItemRepository.GetFoodItemAvgRating(fi.Id)).AvgRating;
 
                     result.Add(item);
                 }
