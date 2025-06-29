@@ -48,7 +48,7 @@ public class RestaurantRepository(FoodOrderContext foodOrderContext) : IRestaura
             .Skip(pageSize * (pageNumber - 1))
             .Take(pageSize)
             .ToListAsync();
-        return (collections, paginationMetadata);
+        return (collectionsToReturn, paginationMetadata);
     }
 
     public async Task<bool> SaveChangesAsync()
