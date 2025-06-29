@@ -14,14 +14,13 @@ namespace FoodAPI.Controllers;
 public class RestaurantController(
     IRestaurantRepository restaurantRepository,
     IUserRepository userRepository,
-    IMapper mapper,
-    IAuthService authService
+    IMapper mapper
     ) : ControllerBase
 {
     private const int MaxRatingsPageSize = 20;
 
     [HttpGet]
-    [Authorize(Policy = "AdminAccessLevel")]
+    [Authorize(Policy = "UserAccessLevel")]
     public async Task<ActionResult<IEnumerable<RestaurantDto>>> GetAllRestaurants()
     {
         var restaurants = await restaurantRepository.GetRestaurantsAsync();
@@ -65,7 +64,7 @@ public class RestaurantController(
     }
 
     [HttpGet("{restaurantId}/ratings")]
-    public async Task<ActionResult<IEnumerable<RatingDto>>> GetRatingsByRestaurant(
+    public async Task<ActionResult<IEnumerable<CreateRatingDto>>> GetRatingsByRestaurant(
         int restaurantId, int pageNumber = 1, int pageSize = 10)
     {
         if (pageSize >  MaxRatingsPageSize)

@@ -17,6 +17,7 @@ public class ShippingInfoRepository(FoodOrderContext foodOrderContext) : IShippi
             totalItemCount, pageSize, pageNumber);
         
         var collectionToReturn = await collection
+            .Where(si => si.UserId == userId)
             .Include(si => si.Restaurant)
                 .ThenInclude(r => r!.Address)
             .OrderBy(si => si.OrderTime)
@@ -57,7 +58,6 @@ public class ShippingInfoRepository(FoodOrderContext foodOrderContext) : IShippi
             .Include(si => si.ShippingInfoDetails).ThenInclude(sid => sid.FoodItem)
             .Include(si => si.Restaurant).ThenInclude(r => r!.Address)
             .Include(si => si.Address)
-            .Include(si => si.Rating)
             .FirstOrDefaultAsync(si => si.Id == shippingInfoId);
     }
 
@@ -100,15 +100,22 @@ public class ShippingInfoRepository(FoodOrderContext foodOrderContext) : IShippi
     public async Task<bool> AddRatingAsync(int shippingInfoId, Rating rating)
     {
         var shippingInfo = await foodOrderContext.ShippingInfos
-            .Include(si => si.Rating)
             .FirstOrDefaultAsync(si => si.Id == shippingInfoId);
-        if (shippingInfo != null && shippingInfo.Rating == null)
+
+        var existedRating = await foodOrderContext.Ratings
+            .FirstOrDefaultAsync(r => r.ShippingInfoId == shippingInfoId);
+        if (existedRating != null)
+            throw new Exception("All ready rated!");
+
+        if (shippingInfo != null)
         {
             rating.RatingTime = DateTime.Now;
-            shippingInfo.Rating = rating;
+            rating.ShippingInfoId = shippingInfoId;
+            await foodOrderContext.Ratings.AddAsync(rating);
             return true;
         }
-        return false;
+
+        throw new Exception("No shipping info found");
     }
 
     public async Task<bool> SaveChangesAsync()

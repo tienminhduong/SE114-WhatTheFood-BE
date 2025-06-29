@@ -47,6 +47,8 @@ public class RestaurantRepository(FoodOrderContext foodOrderContext) : IRestaura
             .OrderBy(r => r.RatingTime)
             .Skip(pageSize * (pageNumber - 1))
             .Take(pageSize)
+            .Include(r => r.ShippingInfo)
+                .ThenInclude(si => si!.User)
             .ToListAsync();
         return (collections, paginationMetadata);
     }

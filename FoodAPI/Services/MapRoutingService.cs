@@ -12,7 +12,7 @@ public class MapRoutingService(IConfiguration config) : IMapRoutingService
         .CreateToken(HereCredentials.FromFile("credentials.properties")).AccessToken;
 
     public async Task<TravelSummary?> GetShortestDistance(
-        float latOrigin, float lngOrigin, float latArrival, float lngArrival)
+        double latOrigin, double lngOrigin, double latArrival, double lngArrival)
     {
         string? url = config["HEREMap:routingBaseUrl"]
             ?? throw new Exception("No routing url found");
