@@ -4,6 +4,7 @@ using FoodAPI.DbContexts;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace FoodAPI.Migrations
 {
     [DbContext(typeof(FoodOrderContext))]
-    partial class FoodOrderContextModelSnapshot : ModelSnapshot
+    [Migration("20250630140319_AddOrderStatus")]
+    partial class AddOrderStatus
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -48,7 +51,7 @@ namespace FoodAPI.Migrations
 
                     b.HasIndex("UserId");
 
-                    b.ToTable("Addresses", (string)null);
+                    b.ToTable("Addresses");
                 });
 
             modelBuilder.Entity("FoodAPI.Entities.FoodCategory", b =>
@@ -66,7 +69,7 @@ namespace FoodAPI.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("FoodCategories", (string)null);
+                    b.ToTable("FoodCategories");
                 });
 
             modelBuilder.Entity("FoodAPI.Entities.FoodItem", b =>
@@ -114,7 +117,7 @@ namespace FoodAPI.Migrations
 
                     b.HasIndex("RestaurantId");
 
-                    b.ToTable("FoodItems", (string)null);
+                    b.ToTable("FoodItems");
                 });
 
             modelBuilder.Entity("FoodAPI.Entities.Notification", b =>
@@ -146,7 +149,7 @@ namespace FoodAPI.Migrations
 
                     b.HasIndex("UserId");
 
-                    b.ToTable("Notifications", (string)null);
+                    b.ToTable("Notifications");
                 });
 
             modelBuilder.Entity("FoodAPI.Entities.Rating", b =>
@@ -173,7 +176,7 @@ namespace FoodAPI.Migrations
 
                     b.HasIndex("ShippingInfoId");
 
-                    b.ToTable("Ratings", (string)null);
+                    b.ToTable("Ratings");
                 });
 
             modelBuilder.Entity("FoodAPI.Entities.Restaurant", b =>
@@ -207,7 +210,7 @@ namespace FoodAPI.Migrations
 
                     b.HasIndex("OwnerId");
 
-                    b.ToTable("Restaurants", (string)null);
+                    b.ToTable("Restaurants");
                 });
 
             modelBuilder.Entity("FoodAPI.Entities.ShippingInfo", b =>
@@ -255,7 +258,7 @@ namespace FoodAPI.Migrations
 
                     b.HasIndex("UserId");
 
-                    b.ToTable("ShippingInfos", (string)null);
+                    b.ToTable("ShippingInfos");
                 });
 
             modelBuilder.Entity("FoodAPI.Entities.ShippingInfoDetail", b =>
@@ -284,7 +287,7 @@ namespace FoodAPI.Migrations
 
                     b.HasIndex("ShippingInfoId");
 
-                    b.ToTable("ShippingInfoDetails", (string)null);
+                    b.ToTable("ShippingInfoDetails");
                 });
 
             modelBuilder.Entity("FoodAPI.Entities.User", b =>
@@ -320,7 +323,7 @@ namespace FoodAPI.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("Users", (string)null);
+                    b.ToTable("Users");
                 });
 
             modelBuilder.Entity("FoodAPI.Entities.Address", b =>

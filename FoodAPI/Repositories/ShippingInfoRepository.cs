@@ -8,41 +8,29 @@ namespace FoodAPI.Repositories;
 
 public class ShippingInfoRepository(FoodOrderContext foodOrderContext) : IShippingInfoRepository
 {
-    public async Task<(IEnumerable<ShippingInfo>,PaginationMetadata)> GetAllUserOrderAsync(
-        int userId, int pageNumber, int pageSize)
+    public async Task<(IEnumerable<ShippingInfo>, PaginationMetadata)> GetAllUserOrderAsync(
+        int userId, int pageNumber = 0, int pageSize = 10, string status = "")
     {
-        var collection = foodOrderContext.ShippingInfos as  IQueryable<ShippingInfo>;
+        var collection = foodOrderContext.ShippingInfos as IQueryable<ShippingInfo>;
         var totalItemCount = await collection.CountAsync();
         var paginationMetadata = new PaginationMetadata(
             totalItemCount, pageSize, pageNumber);
-        
+
         var collectionToReturn = await collection
             .Where(si => si.UserId == userId)
+            .Where(si => status == "" || si.Status == status)
             .Include(si => si.Restaurant)
                 .ThenInclude(r => r!.Address)
+            .Include(si => si.ShippingInfoDetails)
+                .ThenInclude(sd => sd.FoodItem)
+                    .ThenInclude(fi => fi!.FoodCategory)
+            .Include(si => si.Address)
+            .Include(si => si.Rating)
             .OrderBy(si => si.OrderTime)
-            .Skip(pageSize * (pageNumber - 1))
+            .Skip(pageSize * pageNumber)
             .Take(pageSize)
             .ToListAsync();
-        return (collectionToReturn,paginationMetadata);
-    }
-
-    public async Task<IEnumerable<ShippingInfo>> GetAllUserPendingOrdersAsync(int userId)
-    {
-        return await foodOrderContext.ShippingInfos
-            .Where(si => si.UserId == userId && si.ArrivedTime == null)
-            .Include(si => si.Restaurant)
-                .ThenInclude(r => r!.Address)
-            .ToListAsync();
-    }
-
-    public async Task<IEnumerable<ShippingInfo>> GetAllUserCompletedOrdersAsync(int userId)
-    {
-        return await foodOrderContext.ShippingInfos
-            .Where(si => si.UserId == userId && si.ArrivedTime != null)
-            .Include(si => si.Restaurant)
-                .ThenInclude (r => r!.Address)
-            .ToListAsync();    
+        return (collectionToReturn, paginationMetadata);
     }
 
     public async Task<int> GetTotalRestaurantOrderAsync(int restaurantId)
@@ -86,17 +74,6 @@ public class ShippingInfoRepository(FoodOrderContext foodOrderContext) : IShippi
         await foodOrderContext.ShippingInfos.AddAsync(shippingInfo);
     }
 
-    public async Task<bool> AddArrivedTimeAsync(int shippingInfoId)
-    {
-        var shippingInfo = await foodOrderContext.ShippingInfos.FindAsync(shippingInfoId);
-        if (shippingInfo != null && shippingInfo.ArrivedTime == null)
-        {
-            shippingInfo.ArrivedTime = DateTime.Now;
-            return true;
-        }
-        return false;
-    }
-
     public async Task<bool> AddRatingAsync(int shippingInfoId, Rating rating)
     {
         var shippingInfo = await foodOrderContext.ShippingInfos
@@ -121,5 +98,65 @@ public class ShippingInfoRepository(FoodOrderContext foodOrderContext) : IShippi
     public async Task<bool> SaveChangesAsync()
     {
         return (await foodOrderContext.SaveChangesAsync() > 0);
+    }
+
+    public async Task<ShippingInfo> GetAndValidateOwner(int shippingInfoId, int ownerId)
+    {
+        var shippingInfo = await foodOrderContext.ShippingInfos
+            .Include(si => si.Restaurant)
+            .FirstOrDefaultAsync(si => si.Id == shippingInfoId);
+
+        if (shippingInfo == null)
+            throw new Exception("Shipping info not found");
+
+        if (shippingInfo.Restaurant!.OwnerId != ownerId)
+            throw new Exception("You don't own this restaurant");
+
+        return shippingInfo;
+    }
+
+    public async Task ApprovedOrder(int shippingInfoId, int ownerId)
+    {
+        var shippingInfo = await GetAndValidateOwner(shippingInfoId, ownerId);
+
+        if (shippingInfo.Status != "Pending")
+            throw new Exception("Not a pending order");
+
+        shippingInfo.Status = "Approved";
+    }
+
+    public async Task DeliverOrder(int shippingInfoId, int ownerId)
+    {
+        var shippingInfo = await GetAndValidateOwner(shippingInfoId, ownerId);
+        if (shippingInfo.Status != "Approved")
+            throw new Exception("Not an approved order");
+
+        shippingInfo.Status = "Delivering";
+    }
+
+    public async Task SetOrderDeliverd(int shippingInfoId, int ownerId)
+    {
+        var shippingInfo = await GetAndValidateOwner(shippingInfoId, ownerId);
+
+        if (shippingInfo.Status != "Delivering")
+            throw new Exception("Not a delivering order");
+
+        shippingInfo.Status = "Delivered";
+        shippingInfo.ArrivedTime = DateTime.Now;
+    }
+
+    public async Task SetCompletedOrder(int shippingInfoId, int userId)
+    {
+        var shippingInfo = await foodOrderContext.ShippingInfos
+            .FirstOrDefaultAsync(si => si.Id == shippingInfoId)
+            ?? throw new Exception("Shipping info not found");
+
+        if (userId != shippingInfo.UserId)
+            throw new Exception("You don't order this");
+
+        if (shippingInfo.Status != "Delivered")
+            throw new Exception("Order not delivered");
+
+        shippingInfo.Status = "Completed";
     }
 }
