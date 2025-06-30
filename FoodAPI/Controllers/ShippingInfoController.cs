@@ -21,52 +21,61 @@ public class ShippingInfoController(
     IMapper mapper
     ) : ControllerBase
 {
-    private const int MaxShippingInfoPageSize = 20;
-
-    
-    [HttpGet]
-    [Authorize(Policy = "UserAccessLevel")]
-    public async Task<ActionResult<IEnumerable<ShippingInfo>>> GetAllByUser(
-        int pageNumber = 1, int pageSize = 10)
+    private async Task<ActionResult<IEnumerable<ShippingInfoDto>>> GetOrders(
+        int pageNumber = 0, int pageSize = 10, string status = "")
     {
-        if(pageSize > MaxShippingInfoPageSize)
-            pageSize = MaxShippingInfoPageSize;
         string senderPhone = User.FindFirstValue(ClaimTypes.NameIdentifier)!;
         var user = await userRepository.FindPhoneNumberExistsAsync(senderPhone);
+
         if (user == null)
             return NotFound();
+
         var (shippingInfo, paginationMetadata) = await shippingInfoRepository
-            .GetAllUserOrderAsync(user.Id, pageNumber, pageSize);
+            .GetAllUserOrderAsync(user.Id, pageNumber, pageSize, status);
 
         Response.Headers.Append("X-Pagination", JsonSerializer.Serialize(paginationMetadata));
-        return Ok(mapper.Map<IEnumerable<ShippingInfoGetAllByUserDto>>(shippingInfo));
+        return Ok(mapper.Map<IEnumerable<ShippingInfoDto>>(shippingInfo));
+    }
+
+    [HttpGet]
+    [Authorize(Policy = "UserAccessLevel")]
+    public async Task<ActionResult<IEnumerable<ShippingInfoDto>>> GetAllByUser(
+        int pageNumber = 0, int pageSize = 10)
+    {
+        return await GetOrders(pageNumber, pageSize);
     }
 
     [HttpGet("pending")]
     [Authorize(Policy = "UserAccessLevel")]
-    public async Task<ActionResult<IEnumerable<ShippingInfoDto>>> GetAllPendingOrdersByUser()
+    public async Task<ActionResult<IEnumerable<ShippingInfoDto>>> GetAllPendingOrdersByUser(
+        int pageNumber = 0, int pageSize = 10)
     {
-        string senderPhone = User.FindFirstValue(ClaimTypes.NameIdentifier)!;
-        var user = await userRepository.FindPhoneNumberExistsAsync(senderPhone);
-        if (user == null)
-            return NotFound();
-        var shippingInfoEntities = await shippingInfoRepository
-            .GetAllUserPendingOrdersAsync(user.Id);
-        return Ok(mapper.Map<IEnumerable<ShippingInfoGetAllByUserDto>>(shippingInfoEntities));
-    } 
-    
+        return await GetOrders(pageNumber, pageSize, "Pending");
+    }
+
+    [HttpGet("approved")]
+    [Authorize(Policy = "UserAccessLevel")]
+    public async Task<ActionResult<IEnumerable<ShippingInfoDto>>> GetAllApprovedOrdersByUser(
+        int pageNumber = 0, int pageSize = 10)
+    {
+        return await GetOrders(pageNumber, pageSize, "Approved");
+    }
+
+    [HttpGet("delivering")]
+    [Authorize(Policy = "UserAccessLevel")]
+    public async Task<ActionResult<IEnumerable<ShippingInfoDto>>> GetAllDeliveringOrdersByUser(
+        int pageNumber = 0, int pageSize = 10)
+    {
+        return await GetOrders(pageNumber, pageSize, "Delivering");
+    }
+
     [HttpGet("completed")]
     [Authorize(Policy = "UserAccessLevel")]
-    public async Task<ActionResult<IEnumerable<ShippingInfoDto>>> GetAllCompletedOrdersByUser()
+    public async Task<ActionResult<IEnumerable<ShippingInfoDto>>> GetAllCompletedOrdersByUser(
+        int pageNumber = 0, int pageSize = 10)
     {
-        string senderPhone = User.FindFirstValue(ClaimTypes.NameIdentifier)!;
-        var user = await userRepository.FindPhoneNumberExistsAsync(senderPhone);
-        if (user == null)
-            return NotFound();
-        var shippingInfoEntities = await shippingInfoRepository
-            .GetAllUserCompletedOrdersAsync(user.Id);
-        return Ok(mapper.Map<IEnumerable<ShippingInfoGetAllByUserDto>>(shippingInfoEntities));
-    } 
+        return await GetOrders(pageNumber, pageSize, "Completed");
+    }
 
     [HttpGet("{restaurantId}/total")]
     public async Task<ActionResult<int>> GetTotalRestaurantOrder(int restaurantId)
@@ -140,28 +149,92 @@ public class ShippingInfoController(
             createdShippingInfo);
     }
 
-    [HttpPost("order/{shippingInfoId}")]
-    [Authorize(Policy = "UserAccessLevel")]
-    public async Task<ActionResult> CompleteOrder(int shippingInfoId)
+    [Authorize(Policy = "OwnerAccessLevel")]
+    [HttpPost("order/{shippingInfoId}/approved")]
+    public async Task<ActionResult> ApprovedOrder(int shippingInfoId)
     {
-        string senderPhone = User.FindFirstValue(ClaimTypes.NameIdentifier)!;
-        var user = await userRepository.FindPhoneNumberExistsAsync(senderPhone);
-        if (user == null)
-            return NotFound();
-        var result = await shippingInfoRepository.ShippingInfoBelongsToUserOrExistsAsync(shippingInfoId, user.Id);
-        switch (result)
+        try
         {
-            case "":
-                return NotFound();
-            case "not matched":
-                return Forbid();
-        }
+            string senderPhone = User.FindFirstValue(ClaimTypes.NameIdentifier)!;
+            var owner = await userRepository.FindPhoneNumberExistsAsync(senderPhone);
 
-        if(!(await shippingInfoRepository.AddArrivedTimeAsync(shippingInfoId)))
-            return BadRequest();
-        if (!(await shippingInfoRepository.SaveChangesAsync()))
-            return BadRequest();
-        return NoContent();
+            if (owner == null)
+                return BadRequest("Who are you");
+
+            await shippingInfoRepository.ApprovedOrder(shippingInfoId, owner.Id);
+            await shippingInfoRepository.SaveChangesAsync();
+            return Ok();
+        }
+        catch (Exception ex)
+        {
+            return BadRequest(ex.Message);
+        }
+    }
+
+    [Authorize(Policy = "OwnerAccessLevel")]
+    [HttpPost("order/{shippingInfoId}/deliver")]
+    public async Task<ActionResult> DeliverOrder(int shippingInfoId)
+    {
+        try
+        {
+            string senderPhone = User.FindFirstValue(ClaimTypes.NameIdentifier)!;
+            var owner = await userRepository.FindPhoneNumberExistsAsync(senderPhone);
+
+            if (owner == null)
+                return BadRequest("Who are you");
+
+            await shippingInfoRepository.DeliverOrder(shippingInfoId, owner.Id);
+            await shippingInfoRepository.SaveChangesAsync();
+            return Ok();
+        }
+        catch (Exception ex)
+        {
+            return BadRequest(ex.Message);
+        }
+    }
+
+    [Authorize(Policy = "OwnerAccessLevel")]
+    [HttpPost("order/{shippingInfoId}/setdelivered")]
+    public async Task<ActionResult> SetDeliveredOrder(int shippingInfoId)
+    {
+        try
+        {
+            string senderPhone = User.FindFirstValue(ClaimTypes.NameIdentifier)!;
+            var owner = await userRepository.FindPhoneNumberExistsAsync(senderPhone);
+
+            if (owner == null)
+                return BadRequest("Who are you");
+
+            await shippingInfoRepository.SetOrderDeliverd(shippingInfoId, owner.Id);
+            await shippingInfoRepository.SaveChangesAsync();
+            return Ok();
+        }
+        catch (Exception ex)
+        {
+            return BadRequest(ex.Message);
+        }
+    }
+
+    [Authorize(Policy = "UserAccessLevel")]
+    [HttpPost("order/{shippingInfoId}/setcompleted")]
+    public async Task<ActionResult> SetCompletedOrder(int shippingInfoId)
+    {
+        try
+        {
+            string senderPhone = User.FindFirstValue(ClaimTypes.NameIdentifier)!;
+            var user = await userRepository.FindPhoneNumberExistsAsync(senderPhone);
+
+            if (user == null)
+                return BadRequest("Who are you");
+
+            await shippingInfoRepository.SetCompletedOrder(shippingInfoId, user.Id);
+            await shippingInfoRepository.SaveChangesAsync();
+            return Ok();
+        }
+        catch (Exception ex)
+        {
+            return BadRequest(ex.Message);
+        }
     }
 
     [HttpPost("order/{shippingInfoId}/rating")]
