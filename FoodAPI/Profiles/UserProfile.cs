@@ -43,5 +43,6 @@ public class UserProfile: Profile
                 opt => opt.MapFrom(src => src.ShippingInfo!.User!.Name))
             .ForMember(dest => dest.UserPfp,
                 opt => opt.MapFrom(src => src.ShippingInfo!.User!.PfpUrl));
+        CreateMap<Notification, NotificationDto>();
     }
 }

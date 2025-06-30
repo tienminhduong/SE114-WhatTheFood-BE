@@ -1,4 +1,4 @@
-using System.Security.Claims;
+﻿using System.Security.Claims;
 using System.Text.Json;
 using AutoMapper;
 using FoodAPI.Entities;
@@ -17,6 +17,7 @@ public class ShippingInfoController(
     IUserRepository userRepository,
     IRestaurantRepository restaurantRepository,
     IFoodItemRepository foodItemRepository,
+    INotificationRepository notificationRepository,
     IMapper mapper
     ) : ControllerBase
 {
@@ -94,7 +95,11 @@ public class ShippingInfoController(
         var user = await userRepository.FindPhoneNumberExistsAsync(senderPhone);
         if (user == null)
             return NotFound();
-        if (!(await restaurantRepository.CheckRestaurantExistAsync(createShippingInfoDto.RestaurantId)))
+
+        var restaurant = await restaurantRepository
+            .GetRestaurantByIdAsync(createShippingInfoDto.RestaurantId, false);
+
+        if (restaurant == null)
             return NotFound();
 
         var shippingInfoEntity = mapper.Map<ShippingInfo>(createShippingInfoDto);
@@ -115,11 +120,21 @@ public class ShippingInfoController(
         }
 
         await shippingInfoRepository.CreateShippingInfoAsync(shippingInfoEntity);
+
+        var notification = new CreateNotificationDto
+        {
+            Title = "Đơn hàng mới",
+            Content = $"{user.Name} đã đặt một đơn hàng!"
+        };
+
+        await notificationRepository
+            .AddNewNotificationAsync(restaurant.OwnerId, notification);
+
         if (!(await shippingInfoRepository.SaveChangesAsync()))
             return BadRequest();
         
         var createdShippingInfo = mapper.Map<ShippingInfoDto>(shippingInfoEntity);
-        
+
         return CreatedAtRoute("GetShippingInfoById",
             new { shippingInfoId = createdShippingInfo.Id },
             createdShippingInfo);
