@@ -12,6 +12,7 @@ namespace FoodAPI.Controllers;
 [ApiController]
 public class UserController(IUserRepository userRepository,
     IAuthService authService,
+    INotificationRepository notificationRepository,
     IMapper mapper): ControllerBase
 {
     [HttpGet]
@@ -61,5 +62,76 @@ public class UserController(IUserRepository userRepository,
             return BadRequest("Who tf are you!");
 
         return Ok(mapper.Map<UserDto>(user));
+    }
+
+    [Authorize]
+    [HttpGet("notifications")]
+    public async Task<ActionResult<IEnumerable<NotificationDto>>> GetAllNotifications()
+    {
+        var userPhone = User.FindFirstValue(ClaimTypes.NameIdentifier)!;
+
+        var user = await userRepository.FindPhoneNumberExistsAsync(userPhone);
+        if (user == null)
+            return BadRequest("Who tf are you!");
+
+        var result = await notificationRepository.GetAllNotificationsAsync(user.Id);
+        return Ok(mapper.Map<IEnumerable<NotificationDto>>(result));
+    }
+
+    [Authorize]
+    [HttpGet("notifications/{id}")]
+    public async Task<ActionResult<IEnumerable<NotificationDto>>> ReadNotification(int id)
+    {
+        var userPhone = User.FindFirstValue(ClaimTypes.NameIdentifier)!;
+
+        var user = await userRepository.FindPhoneNumberExistsAsync(userPhone);
+        if (user == null)
+            return BadRequest("Who tf are you!");
+
+        try
+        {
+            var result = await notificationRepository.ReadNotificationAsync(id);
+            if (result == null)
+                return NotFound();
+
+            if (result.UserId != user.Id)
+                return Forbid();
+
+            return Ok(mapper.Map<NotificationDto>(result));
+        }
+        catch (Exception ex)
+        {
+            return BadRequest(ex.Message);
+        }
+    }
+
+    [Authorize]
+    [HttpDelete("notifications/{id}")]
+    public async Task<ActionResult> DeleteNotification(int id)
+    {
+        var userPhone = User.FindFirstValue(ClaimTypes.NameIdentifier)!;
+
+        var user = await userRepository.FindPhoneNumberExistsAsync(userPhone);
+        if (user == null)
+            return BadRequest("Who tf are you!");
+
+        try
+        {
+            var notification = await notificationRepository.ReadNotificationAsync(id);
+            if (notification == null)
+                return NotFound();
+
+            if (notification.UserId != user.Id)
+                return Forbid();
+
+
+            await notificationRepository.DeleteNotificationAsync(id);
+            await notificationRepository.SaveChangeAsync();
+            return NoContent();
+        }
+        catch (Exception ex)
+        {
+            return BadRequest(ex.Message);
+        }
     }
 }

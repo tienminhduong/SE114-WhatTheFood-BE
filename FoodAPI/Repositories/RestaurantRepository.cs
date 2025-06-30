@@ -18,10 +18,12 @@ public class RestaurantRepository(FoodOrderContext foodOrderContext) : IRestaura
         if (includeFoodItems)
         {
             return await foodOrderContext.Restaurants.Include(r => r.Address)
+                .Include(r => r.Owner)
                 .Include(r => r.FoodItems)
                 .FirstOrDefaultAsync(r => r.Id == id);
         }
         return await foodOrderContext.Restaurants.Include(r => r.Address)
+            .Include(r => r.Owner)
             .FirstOrDefaultAsync(r => r.Id == id);
     }
 
