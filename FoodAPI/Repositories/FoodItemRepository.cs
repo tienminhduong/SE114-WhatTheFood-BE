@@ -4,6 +4,7 @@ using FoodAPI.Interfaces;
 using FoodAPI.Models;
 using FoodAPI.Services;
 using Microsoft.EntityFrameworkCore;
+using System.ComponentModel;
 
 namespace FoodAPI.Repositories
 {
@@ -43,7 +44,6 @@ namespace FoodAPI.Repositories
                 .Where(food => !isAvailableOnly || food.Available)
                 .Where(food => food.Price < priceLowerThan)
                 .Where(food => food.Price > priceHigherThan)
-                .Skip(offset).Take(pageSize)
                 .Include(food => food.Restaurant)
                     .ThenInclude(res => res!.Address)
                 .Include(food => food.FoodCategory)
@@ -66,10 +66,10 @@ namespace FoodAPI.Repositories
                 case "":
                     break;
                 default:
-                    throw new InvalidOperationException("Invalid sort criteria");
+                    throw new InvalidEnumArgumentException("Invalid sort criteria");
             }
 
-            return foodItems;
+            return foodItems.Skip(offset).Take(pageSize).ToList();
         }
 
         public Task<bool> RemoveFoodItem(int id)

@@ -13,6 +13,7 @@ public class FoodOrderContext(DbContextOptions<FoodOrderContext> options): DbCon
     public DbSet<ShippingInfo> ShippingInfos { get; set; }
     public DbSet<ShippingInfoDetail> ShippingInfoDetails { get; set; }
     public DbSet<User> Users { get; set; }
+    public DbSet<Notification> Notifications { get; set; }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -35,6 +36,12 @@ public class FoodOrderContext(DbContextOptions<FoodOrderContext> options): DbCon
             .WithMany(r => r.FoodItems)
             .HasForeignKey(f => f.RestaurantId)
             .OnDelete(DeleteBehavior.Restrict);
+
+        modelBuilder.Entity<Notification>()
+            .HasOne(n => n.User)
+            .WithMany(u => u.Notifications)
+            .HasForeignKey(n => n.UserId)
+            .OnDelete(DeleteBehavior.Cascade);
     }
 
     protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)

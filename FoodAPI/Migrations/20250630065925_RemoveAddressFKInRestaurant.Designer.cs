@@ -4,6 +4,7 @@ using FoodAPI.DbContexts;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace FoodAPI.Migrations
 {
     [DbContext(typeof(FoodOrderContext))]
-    partial class FoodOrderContextModelSnapshot : ModelSnapshot
+    [Migration("20250630065925_RemoveAddressFKInRestaurant")]
+    partial class RemoveAddressFKInRestaurant
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -115,38 +118,6 @@ namespace FoodAPI.Migrations
                     b.HasIndex("RestaurantId");
 
                     b.ToTable("FoodItems");
-                });
-
-            modelBuilder.Entity("FoodAPI.Entities.Notification", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
-
-                    b.Property<string>("Content")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<DateTime>("DateTime")
-                        .HasColumnType("datetime2");
-
-                    b.Property<bool>("IsRead")
-                        .HasColumnType("bit");
-
-                    b.Property<string>("Title")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<int>("UserId")
-                        .HasColumnType("int");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("UserId");
-
-                    b.ToTable("Notifications");
                 });
 
             modelBuilder.Entity("FoodAPI.Entities.Rating", b =>
@@ -347,17 +318,6 @@ namespace FoodAPI.Migrations
                     b.Navigation("Restaurant");
                 });
 
-            modelBuilder.Entity("FoodAPI.Entities.Notification", b =>
-                {
-                    b.HasOne("FoodAPI.Entities.User", "User")
-                        .WithMany("Notifications")
-                        .HasForeignKey("UserId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("User");
-                });
-
             modelBuilder.Entity("FoodAPI.Entities.Rating", b =>
                 {
                     b.HasOne("FoodAPI.Entities.ShippingInfo", "ShippingInfo")
@@ -457,8 +417,6 @@ namespace FoodAPI.Migrations
             modelBuilder.Entity("FoodAPI.Entities.User", b =>
                 {
                     b.Navigation("Addresses");
-
-                    b.Navigation("Notifications");
 
                     b.Navigation("OwnedRestaurant");
 

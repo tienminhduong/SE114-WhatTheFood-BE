@@ -21,4 +21,5 @@ public class User
     public ICollection<Address> Addresses { get; set; } = new List<Address>();
     public ICollection<ShippingInfo> ShippingInfos { get; set; } = new List<ShippingInfo>();
     public ICollection<Restaurant> OwnedRestaurant { get; set; } = new List<Restaurant>();
+    public ICollection<Notification> Notifications { get; set; } = new List<Notification>();
 }
