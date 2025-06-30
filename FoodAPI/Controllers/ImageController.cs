@@ -21,7 +21,7 @@ public class ImageController(
 {
     [Authorize(Policy = "UserAccessLevel")]
     [HttpPost("profile")]
-    public async Task<ActionResult<UserDto>> UploadUserProfileImage(IFormFile file)
+    public async Task<ActionResult<UserDto>> UploadUserProfileImage(IFormFile image)
     {
         string senderPhone = User.FindFirstValue(ClaimTypes.NameIdentifier)!;
         var user = await userRepository.FindPhoneNumberExistsAsync(senderPhone);
@@ -38,7 +38,7 @@ public class ImageController(
             user.PfpUrl = user.PfpPublicId = null;
         }
 
-        var uploadResult = await imageService.AddImageAsync(file, 300, 300);
+        var uploadResult = await imageService.AddImageAsync(image, 300, 300);
         if (uploadResult.Error != null)
             return BadRequest(uploadResult.Error.Message);
 
@@ -74,7 +74,7 @@ public class ImageController(
 
     [HttpPost("restaurant")]
     [Authorize(Policy = "OwnerAccessLevel")]
-    public async Task<ActionResult<RestaurantDto>> UploadRestaurantImage(IFormFile file, int  restaurantId)
+    public async Task<ActionResult<RestaurantDto>> UploadRestaurantImage(IFormFile image, int  restaurantId)
     {
         string senderPhone = User.FindFirstValue(ClaimTypes.NameIdentifier)!;
 
@@ -96,7 +96,7 @@ public class ImageController(
             restaurantEntity.CldnrPublicId = restaurantEntity.CldnrUrl = null;
         }
         
-        var uploadResult = await imageService.AddImageAsync(file, 640, 480);
+        var uploadResult = await imageService.AddImageAsync(image, 640, 480);
         if (uploadResult.Error != null)
             return BadRequest(uploadResult.Error.Message);
 
@@ -109,7 +109,7 @@ public class ImageController(
     
     [HttpPost("fooditem")]
     [Authorize(Policy = "OwnerAccessLevel")]
-    public async Task<ActionResult<RestaurantDto>> UploadFoodItemImage(IFormFile file, int foodItemId)
+    public async Task<ActionResult<RestaurantDto>> UploadFoodItemImage(IFormFile image, int foodItemId)
     {
         var foodItemEntity = await foodItemRepository.GetById(foodItemId);
         if (foodItemEntity == null)
@@ -129,7 +129,7 @@ public class ImageController(
             foodItemEntity.CldnrPublicId = foodItemEntity.CldnrUrl = null;
         }
         
-        var uploadResult = await imageService.AddImageAsync(file, 300, 300);
+        var uploadResult = await imageService.AddImageAsync(image, 300, 300);
         if (uploadResult.Error != null)
             return BadRequest(uploadResult.Error.Message);
 
