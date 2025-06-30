@@ -17,7 +17,6 @@ public class FoodItemController(
     IFoodCategoryRepository foodCategoryRepository,
     IAuthService authService,
     IMapRoutingService mapRoutingService,
-    IRestaurantRepository restaurantRepository,
     IMapper mapper) : ControllerBase
 {
     private const int MaxRatingsPageSize = 20;
@@ -171,6 +170,7 @@ public class FoodItemController(
     }
 
     private static IEnumerable<FoodRecommendDto> SearchByLocationResult { get; set; } = [];
+    private static IEnumerable<FoodRecommendDto> SearchByRatingResult { get; set; } = [];
 
     [HttpGet("recommended/bylocation")]
     public async Task<ActionResult<IEnumerable<FoodRecommendDto>>> GetRecommendationByLocation(
@@ -189,6 +189,87 @@ public class FoodItemController(
             var result = SearchByLocationResult
                 .Skip(pageNumber * pageSize)
                 .Take(pageSize)
+                .ToList();
+
+            return Ok(result);
+        }
+        catch (Exception ex)
+        {
+            return BadRequest(ex.Message);
+        }
+    }
+
+    [HttpGet("recommended/bysoldamount")]
+    public async Task<ActionResult<IEnumerable<FoodRecommendDto>>> GetRecommdationBySoldAmount(
+        int pageNumber = 0,
+        int pageSize = 10
+        )
+    {
+        try
+        {
+            List<FoodRecommendDto> result = [];
+            var itemList = await foodItemRepository.GetItemsBy(
+                pageNumber: pageNumber,
+                pageSize: pageSize,
+                sortBy: "soldAmountDesc");
+
+            foreach (var item in itemList)
+            {
+                var frDto = new FoodRecommendDto
+                {
+                    FoodId = item.Id,
+                    Name = item.FoodName,
+                    ImgUrl = item.CldnrUrl,
+                    SoldAmount = item.SoldAmount,
+                    RestaurantName = item.Restaurant!.Name,
+                    Rating = (await foodItemRepository.GetFoodItemAvgRating(item.Id)),
+                };
+
+                result.Add(frDto);
+            }
+
+            return Ok(result);
+        }
+        catch (Exception ex)
+        {
+            return BadRequest(ex.Message);
+        }
+    }
+
+    [HttpGet("recommended/byrating")]
+    public async Task<ActionResult<IEnumerable<FoodRecommendDto>>> GetRecommendationByRating(
+        int pageNumber = 0,
+        int pageSize = 10
+        )
+    {
+        try
+        {
+            if (pageNumber == 0)
+            {
+                List<FoodRecommendDto> l = [];
+                var foodItems = (await foodItemRepository.GetItemsBy(pageSize: int.MaxValue))!;
+                foreach (var item in foodItems)
+                {
+                    var frDto = new FoodRecommendDto
+                    {
+                        FoodId = item.Id,
+                        Name = item.FoodName,
+                        ImgUrl = item.CldnrUrl,
+                        SoldAmount = item.SoldAmount,
+                        RestaurantName = item.Restaurant!.Name,
+                        Rating = (await foodItemRepository.GetFoodItemAvgRating(item.Id)),
+                    };
+
+                    l.Add(frDto);
+                }
+
+                SearchByRatingResult = l;
+            }
+
+            var result = SearchByRatingResult
+                .OrderByDescending(x => x.Rating.AvgRating)
+                    .ThenByDescending(x => x.Rating.Number)
+                .Skip(pageNumber * pageSize).Take(pageSize)
                 .ToList();
 
             return Ok(result);

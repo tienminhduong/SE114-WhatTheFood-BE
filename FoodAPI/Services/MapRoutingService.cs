@@ -54,12 +54,12 @@ public class MapRoutingService(
                     FoodId = fi.Id,
                     ImgUrl = fi.CldnrUrl,
                     Name = fi.FoodName,
+                    RestaurantName = restaurant.Name,
                     DistanceInKm = r.Value.length / 1000f,
                     DistanceInTime = r.Value.duration / 60,
-                    Rating = 0
                 };
 
-                item.Rating = (await foodItemRepository.GetFoodItemAvgRating(fi.Id)).AvgRating;
+                item.Rating = (await foodItemRepository.GetFoodItemAvgRating(fi.Id));
 
                 result.Add(item);
             }
