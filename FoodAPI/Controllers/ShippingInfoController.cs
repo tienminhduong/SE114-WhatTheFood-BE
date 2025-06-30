@@ -150,7 +150,7 @@ public class ShippingInfoController(
     }
 
     [Authorize(Policy = "OwnerAccessLevel")]
-    [HttpPost("order/{shippingInfoId}/approved")]
+    [HttpPost("{shippingInfoId}/approve")]
     public async Task<ActionResult> ApprovedOrder(int shippingInfoId)
     {
         try
@@ -172,7 +172,7 @@ public class ShippingInfoController(
     }
 
     [Authorize(Policy = "OwnerAccessLevel")]
-    [HttpPost("order/{shippingInfoId}/deliver")]
+    [HttpPost("{shippingInfoId}/deliver")]
     public async Task<ActionResult> DeliverOrder(int shippingInfoId)
     {
         try
@@ -194,7 +194,7 @@ public class ShippingInfoController(
     }
 
     [Authorize(Policy = "OwnerAccessLevel")]
-    [HttpPost("order/{shippingInfoId}/setdelivered")]
+    [HttpPost("{shippingInfoId}/setdelivered")]
     public async Task<ActionResult> SetDeliveredOrder(int shippingInfoId)
     {
         try
@@ -216,7 +216,7 @@ public class ShippingInfoController(
     }
 
     [Authorize(Policy = "UserAccessLevel")]
-    [HttpPost("order/{shippingInfoId}/setcompleted")]
+    [HttpPost("{shippingInfoId}/setcompleted")]
     public async Task<ActionResult> SetCompletedOrder(int shippingInfoId)
     {
         try
@@ -237,7 +237,7 @@ public class ShippingInfoController(
         }
     }
 
-    [HttpPost("order/{shippingInfoId}/rating")]
+    [HttpPost("{shippingInfoId}/rating")]
     [Authorize(Policy = "UserAccessLevel")]
     public async Task<ActionResult> AddRating(int shippingInfoId, CreateRatingDto ratingDto)
     {
