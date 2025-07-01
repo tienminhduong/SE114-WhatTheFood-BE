@@ -16,6 +16,8 @@ public class User
     [Required]
     public string PasswordHash { get; set; } = string.Empty;
     public string Role { get; set; } = "User";
+    public string? RefreshToken { get; set; }
+    public DateTime? RefreshTokenExpiryTime { get; set; }
     public string? PfpPublicId { get; set; }
     public string? PfpUrl { get; set; }
     public ICollection<Address> Addresses { get; set; } = new List<Address>();

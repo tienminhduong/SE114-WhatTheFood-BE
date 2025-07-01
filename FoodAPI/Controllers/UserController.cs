@@ -42,12 +42,19 @@ public class UserController(IUserRepository userRepository,
     [HttpPost("login")]
     public async Task<ActionResult<LoginTokenDto>> LoginUser(UserLoginDto userLogin)
     {
-        string? accessToken = await authService.LoginAsync(userLogin);
-        if (accessToken == null)
+        var token = await authService.LoginAsync(userLogin);
+        if (token == null)
             return BadRequest("Username or password is not correct");
 
-        var token = new LoginTokenDto { AccessToken = accessToken };
+        return Ok(token);
+    }
 
+    [HttpPost("refresh-token")]
+    public async Task<ActionResult<LoginTokenDto>> RefreshToken(RefreshTokenDto refreshTokenDto)
+    {
+        var token = await authService.RefreshTokenAsync(refreshTokenDto);
+        if (token == null)
+            return BadRequest("Invalid refresh token");
         return Ok(token);
     }
 
