@@ -43,7 +43,7 @@ public class ShippingInfoRepository(FoodOrderContext foodOrderContext) : IShippi
     public async Task<ShippingInfo?> GetShippingInfoDetailsAsync(int shippingInfoId)
     {
         return await foodOrderContext.ShippingInfos
-            .Include(si => si.ShippingInfoDetails).ThenInclude(sid => sid.FoodItem)
+            .Include(si => si.ShippingInfoDetails).ThenInclude(sid => sid.FoodItem).ThenInclude(fi => fi!.FoodCategory)
             .Include(si => si.Restaurant).ThenInclude(r => r!.Address)
             .Include(si => si.Address)
             .FirstOrDefaultAsync(si => si.Id == shippingInfoId);
@@ -104,6 +104,7 @@ public class ShippingInfoRepository(FoodOrderContext foodOrderContext) : IShippi
     {
         var shippingInfo = await foodOrderContext.ShippingInfos
             .Include(si => si.Restaurant)
+                .ThenInclude(r => r!.Owner)
             .FirstOrDefaultAsync(si => si.Id == shippingInfoId);
 
         if (shippingInfo == null)
@@ -115,7 +116,7 @@ public class ShippingInfoRepository(FoodOrderContext foodOrderContext) : IShippi
         return shippingInfo;
     }
 
-    public async Task ApprovedOrder(int shippingInfoId, int ownerId)
+    public async Task<ShippingInfo> ApprovedOrder(int shippingInfoId, int ownerId)
     {
         var shippingInfo = await GetAndValidateOwner(shippingInfoId, ownerId);
 
@@ -123,18 +124,20 @@ public class ShippingInfoRepository(FoodOrderContext foodOrderContext) : IShippi
             throw new Exception("Not a pending order");
 
         shippingInfo.Status = "Approved";
+        return shippingInfo;
     }
 
-    public async Task DeliverOrder(int shippingInfoId, int ownerId)
+    public async Task<ShippingInfo> DeliverOrder(int shippingInfoId, int ownerId)
     {
         var shippingInfo = await GetAndValidateOwner(shippingInfoId, ownerId);
         if (shippingInfo.Status != "Approved")
             throw new Exception("Not an approved order");
 
         shippingInfo.Status = "Delivering";
+        return shippingInfo;
     }
 
-    public async Task SetOrderDeliverd(int shippingInfoId, int ownerId)
+    public async Task<ShippingInfo> SetOrderDeliverd(int shippingInfoId, int ownerId)
     {
         var shippingInfo = await GetAndValidateOwner(shippingInfoId, ownerId);
 
@@ -143,11 +146,15 @@ public class ShippingInfoRepository(FoodOrderContext foodOrderContext) : IShippi
 
         shippingInfo.Status = "Delivered";
         shippingInfo.ArrivedTime = DateTime.Now;
+
+        return shippingInfo;
     }
 
-    public async Task SetCompletedOrder(int shippingInfoId, int userId)
+    public async Task<ShippingInfo> SetCompletedOrder(int shippingInfoId, int userId)
     {
         var shippingInfo = await foodOrderContext.ShippingInfos
+            .Include(si => si.Restaurant)
+                .ThenInclude(r => r!.Owner)
             .FirstOrDefaultAsync(si => si.Id == shippingInfoId)
             ?? throw new Exception("Shipping info not found");
 
@@ -158,5 +165,6 @@ public class ShippingInfoRepository(FoodOrderContext foodOrderContext) : IShippi
             throw new Exception("Order not delivered");
 
         shippingInfo.Status = "Completed";
+        return shippingInfo;
     }
 }

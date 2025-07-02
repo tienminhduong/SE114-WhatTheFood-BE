@@ -4,6 +4,7 @@ using FoodAPI.DbContexts;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace FoodAPI.Migrations
 {
     [DbContext(typeof(FoodOrderContext))]
-    partial class FoodOrderContextModelSnapshot : ModelSnapshot
+    [Migration("20250701155224_AddRatingFK")]
+    partial class AddRatingFK
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -147,19 +150,6 @@ namespace FoodAPI.Migrations
                     b.HasIndex("UserId");
 
                     b.ToTable("Notifications");
-                });
-
-            modelBuilder.Entity("FoodAPI.Entities.NotificationToken", b =>
-                {
-                    b.Property<int>("UserId")
-                        .HasColumnType("int");
-
-                    b.Property<string>("DeviceToken")
-                        .HasColumnType("nvarchar(450)");
-
-                    b.HasKey("UserId", "DeviceToken");
-
-                    b.ToTable("NotificationTokens");
                 });
 
             modelBuilder.Entity("FoodAPI.Entities.Rating", b =>
@@ -328,12 +318,6 @@ namespace FoodAPI.Migrations
                         .HasMaxLength(12)
                         .HasColumnType("nvarchar(12)");
 
-                    b.Property<string>("RefreshToken")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<DateTime?>("RefreshTokenExpiryTime")
-                        .HasColumnType("datetime2");
-
                     b.Property<string>("Role")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
@@ -375,17 +359,6 @@ namespace FoodAPI.Migrations
                 {
                     b.HasOne("FoodAPI.Entities.User", "User")
                         .WithMany("Notifications")
-                        .HasForeignKey("UserId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("User");
-                });
-
-            modelBuilder.Entity("FoodAPI.Entities.NotificationToken", b =>
-                {
-                    b.HasOne("FoodAPI.Entities.User", "User")
-                        .WithMany("NotificationTokens")
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
@@ -494,8 +467,6 @@ namespace FoodAPI.Migrations
             modelBuilder.Entity("FoodAPI.Entities.User", b =>
                 {
                     b.Navigation("Addresses");
-
-                    b.Navigation("NotificationTokens");
 
                     b.Navigation("Notifications");
 

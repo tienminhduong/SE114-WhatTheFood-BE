@@ -1,15 +1,17 @@
-using System;
-using System.Net;
-using System.Text;
+using FirebaseAdmin;
 using FoodAPI.DbContexts;
 using FoodAPI.Interfaces;
 using FoodAPI.Repositories;
 using FoodAPI.Services;
+using Google.Apis.Auth.OAuth2;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using Scalar.AspNetCore;
 using Serilog;
+using System;
+using System.Net;
+using System.Text;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -29,6 +31,14 @@ builder.WebHost.ConfigureKestrel(options => {
 builder.Services.AddControllers();
 
 builder.Services.AddOpenApi();
+FirebaseApp.Create(new AppOptions()
+{
+    Credential = GoogleCredential.FromFile("firebase_token.json"),
+});
+
+
+
+
 
 //Add DbContext
 builder.Services.AddDbContext<FoodOrderContext>(options =>
@@ -49,6 +59,7 @@ builder.Services.AddScoped<IRestaurantRepository, RestaurantRepository>();
 builder.Services.AddScoped<IShippingInfoRepository, ShippingInfoRepository>();
 builder.Services.AddScoped<IMapRoutingService, MapRoutingService>();
 builder.Services.AddScoped<INotificationRepository, NotificationRepository>();
+builder.Services.AddScoped<INotificationService, NotificationService>();
 
 builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme).AddJwtBearer(
     options => {

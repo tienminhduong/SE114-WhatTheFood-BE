@@ -4,6 +4,7 @@ using FoodAPI.DbContexts;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace FoodAPI.Migrations
 {
     [DbContext(typeof(FoodOrderContext))]
-    partial class FoodOrderContextModelSnapshot : ModelSnapshot
+    [Migration("20250701174403_AddRefreshToken")]
+    partial class AddRefreshToken
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -147,19 +150,6 @@ namespace FoodAPI.Migrations
                     b.HasIndex("UserId");
 
                     b.ToTable("Notifications");
-                });
-
-            modelBuilder.Entity("FoodAPI.Entities.NotificationToken", b =>
-                {
-                    b.Property<int>("UserId")
-                        .HasColumnType("int");
-
-                    b.Property<string>("DeviceToken")
-                        .HasColumnType("nvarchar(450)");
-
-                    b.HasKey("UserId", "DeviceToken");
-
-                    b.ToTable("NotificationTokens");
                 });
 
             modelBuilder.Entity("FoodAPI.Entities.Rating", b =>
@@ -382,17 +372,6 @@ namespace FoodAPI.Migrations
                     b.Navigation("User");
                 });
 
-            modelBuilder.Entity("FoodAPI.Entities.NotificationToken", b =>
-                {
-                    b.HasOne("FoodAPI.Entities.User", "User")
-                        .WithMany("NotificationTokens")
-                        .HasForeignKey("UserId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("User");
-                });
-
             modelBuilder.Entity("FoodAPI.Entities.Rating", b =>
                 {
                     b.HasOne("FoodAPI.Entities.ShippingInfo", "ShippingInfo")
@@ -494,8 +473,6 @@ namespace FoodAPI.Migrations
             modelBuilder.Entity("FoodAPI.Entities.User", b =>
                 {
                     b.Navigation("Addresses");
-
-                    b.Navigation("NotificationTokens");
 
                     b.Navigation("Notifications");
 

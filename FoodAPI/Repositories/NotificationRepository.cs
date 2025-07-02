@@ -25,6 +25,26 @@ namespace FoodAPI.Repositories
             await dbContext.Notifications.AddAsync(notification);
         }
 
+        public async Task AddNotificationToken(int userId, string deviceToken)
+        {
+            var user = await dbContext.Users.FirstOrDefaultAsync(u => u.Id == userId)
+                ?? throw new Exception("User not found");
+
+            var t = await dbContext.NotificationTokens
+                .FirstOrDefaultAsync(nt => nt.DeviceToken == deviceToken);
+
+            if (t != null)
+                throw new Exception("Device token already existed");
+
+            NotificationToken token = new()
+            {
+                UserId = userId,
+                DeviceToken = deviceToken
+            };
+
+            await dbContext.AddAsync(token);
+        }
+
         public async Task DeleteNotificationAsync(int notificationId)
         {
             var notification = await dbContext.Notifications
@@ -35,6 +55,18 @@ namespace FoodAPI.Repositories
             dbContext.Notifications.Remove(notification);
         }
 
+        public async Task DeleteUserToken(int userId, string deviceToken)
+        {
+            var token = await dbContext.NotificationTokens
+                .FirstOrDefaultAsync(nt => nt.DeviceToken == deviceToken)
+                ?? throw new Exception("Device token not existed");
+
+            if (token.UserId != userId)
+                throw new Exception("Not your account");
+
+            dbContext.NotificationTokens.Remove(token);
+        }
+
         public async Task<IEnumerable<Notification>> GetAllNotificationsAsync(int userId)
         {
             var user = await dbContext.Users
@@ -43,6 +75,18 @@ namespace FoodAPI.Repositories
                 ?? throw new Exception("No user found");
 
             return user.Notifications.ToList();
+        }
+
+        public async Task<IEnumerable<string>> GetUserTokens(int userId)
+        {
+            var user = await dbContext.Users
+                .Include(u => u.NotificationTokens)
+                .FirstOrDefaultAsync(u => u.Id == userId)
+                ?? throw new Exception("User not found");
+
+            return user.NotificationTokens
+                .Select(nt => nt.DeviceToken)
+                .AsEnumerable();
         }
 
         public async Task<Notification> ReadNotificationAsync(int notificationId)

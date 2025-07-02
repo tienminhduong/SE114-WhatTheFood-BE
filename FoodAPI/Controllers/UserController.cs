@@ -1,4 +1,5 @@
 ﻿using AutoMapper;
+using FirebaseAdmin.Messaging;
 using FoodAPI.Entities;
 using FoodAPI.Interfaces;
 using FoodAPI.Models;
@@ -42,12 +43,19 @@ public class UserController(IUserRepository userRepository,
     [HttpPost("login")]
     public async Task<ActionResult<LoginTokenDto>> LoginUser(UserLoginDto userLogin)
     {
-        string? accessToken = await authService.LoginAsync(userLogin);
-        if (accessToken == null)
+        var token = await authService.LoginAsync(userLogin);
+        if (token == null)
             return BadRequest("Username or password is not correct");
 
-        var token = new LoginTokenDto { AccessToken = accessToken };
+        return Ok(token);
+    }
 
+    [HttpPost("refresh-token")]
+    public async Task<ActionResult<LoginTokenDto>> RefreshToken(RefreshTokenDto refreshTokenDto)
+    {
+        var token = await authService.RefreshTokenAsync(refreshTokenDto);
+        if (token == null)
+            return BadRequest("Invalid refresh token");
         return Ok(token);
     }
 
@@ -128,6 +136,86 @@ public class UserController(IUserRepository userRepository,
             await notificationRepository.DeleteNotificationAsync(id);
             await notificationRepository.SaveChangeAsync();
             return NoContent();
+        }
+        catch (Exception ex)
+        {
+            return BadRequest(ex.Message);
+        }
+    }
+
+    [Authorize]
+    [HttpPost("device-token")]
+    public async Task<ActionResult> AddDeviceToken([FromBody] NotificationTokenDto tokenDto)
+    {
+        try
+        {
+            var userPhone = User.FindFirstValue(ClaimTypes.NameIdentifier)!;
+            var user = await userRepository.FindPhoneNumberExistsAsync(userPhone);
+            if (user == null)
+                return BadRequest("Who tf are you!");
+
+
+            await notificationRepository.AddNotificationToken(user.Id, tokenDto.DeviceToken);
+            await notificationRepository.SaveChangeAsync();
+
+            return Ok();
+        }
+        catch (Exception ex)
+        {
+            return BadRequest(ex.Message);
+        }
+    }
+
+    [Authorize]
+    [HttpDelete("device-token")]
+    public async Task<ActionResult> DeleteDeviceToken(string deviceToken)
+    {
+        try
+        {
+            var userPhone = User.FindFirstValue(ClaimTypes.NameIdentifier)!;
+            var user = await userRepository.FindPhoneNumberExistsAsync(userPhone);
+            if (user == null)
+                return BadRequest("Who tf are you!");
+            await notificationRepository.DeleteUserToken(user.Id, deviceToken);
+            await notificationRepository.SaveChangeAsync();
+            return NoContent();
+        }
+        catch (Exception ex)
+        {
+            return BadRequest(ex.Message);
+        }
+    }
+
+    [Authorize]
+    [HttpPost("fcm/test")]
+    public async Task<ActionResult> TestFCM()
+    {
+        try
+        {
+            var userPhone = User.FindFirstValue(ClaimTypes.NameIdentifier)!;
+            var user = await userRepository.FindPhoneNumberExistsAsync(userPhone);
+            if (user == null)
+                return BadRequest("Who tf are you!");
+
+
+            var tokens = await notificationRepository.GetUserTokens(user.Id);
+            var responses = "";
+            foreach (var token in tokens)
+            {
+                var message = new Message()
+                {
+                    Notification = new ()
+                    {
+                        Title = "Vcl",
+                        Body = "DDCaghwlghjkghekhgjkerhgk"
+                    },
+                    Token = token
+                };
+
+                string response = await FirebaseMessaging.DefaultInstance.SendAsync(message);
+                responses += $"Token: {token}, {response} \n";
+            }
+            return Ok(responses);
         }
         catch (Exception ex)
         {
