@@ -161,8 +161,17 @@ public class ShippingInfoController(
             if (owner == null)
                 return BadRequest("Who are you");
 
-            await shippingInfoRepository.ApprovedOrder(shippingInfoId, owner.Id);
+            var si = await shippingInfoRepository.ApprovedOrder(shippingInfoId, owner.Id);
             await shippingInfoRepository.SaveChangesAsync();
+
+            var notification = new CreateNotificationDto
+            {
+                Title = "Đã được xác nhận",
+                Content = $"Đơn hàng {shippingInfoId} đã được nhận, nhà hàng đang chuẩn bị món ăn cho bạn!"
+            };
+
+            await notificationService.SendNotification(si.UserId, notification);
+
             return Ok();
         }
         catch (Exception ex)
@@ -183,8 +192,17 @@ public class ShippingInfoController(
             if (owner == null)
                 return BadRequest("Who are you");
 
-            await shippingInfoRepository.DeliverOrder(shippingInfoId, owner.Id);
+            var si = await shippingInfoRepository.DeliverOrder(shippingInfoId, owner.Id);
             await shippingInfoRepository.SaveChangesAsync();
+
+            var notification = new CreateNotificationDto
+            {
+                Title = "Đơn hàng của bạn đang được giao",
+                Content = $"Đơn hàng {shippingInfoId} hiện đang được giao, bạn vui lòng đợi cho đến khi nhận được hàng!"
+            };
+
+            await notificationService.SendNotification(si.UserId, notification);
+
             return Ok();
         }
         catch (Exception ex)
@@ -205,8 +223,17 @@ public class ShippingInfoController(
             if (owner == null)
                 return BadRequest("Who are you");
 
-            await shippingInfoRepository.SetOrderDeliverd(shippingInfoId, owner.Id);
+            var si = await shippingInfoRepository.SetOrderDeliverd(shippingInfoId, owner.Id);
             await shippingInfoRepository.SaveChangesAsync();
+
+            var notification = new CreateNotificationDto
+            {
+                Title = "Đơn hàng của bạn đã đến",
+                Content = $"Đơn hàng {shippingInfoId} của bạn đã được giao đến, vui lòng đến địa điểm đã đặt hàng để nhận hàng"
+            };
+
+            await notificationService.SendNotification(si.UserId, notification);
+
             return Ok();
         }
         catch (Exception ex)
@@ -227,8 +254,23 @@ public class ShippingInfoController(
             if (user == null)
                 return BadRequest("Who are you");
 
-            await shippingInfoRepository.SetCompletedOrder(shippingInfoId, user.Id);
+            var si = await shippingInfoRepository.SetCompletedOrder(shippingInfoId, user.Id);
             await shippingInfoRepository.SaveChangesAsync();
+
+            var userNoti = new CreateNotificationDto
+            {
+                Title = "Xác nhận thành công",
+                Content = "Cảm ơn bạn đã xác nhận nhận hàng thành công, bạn có thể thêm đánh giá sau khi thưởng thức bữa ăn. Chúc bạn ngon miệng!"
+            };
+            await notificationService.SendNotification(si.UserId, userNoti);
+
+            var ownerNoti = new CreateNotificationDto
+            {
+                Title = "Xác nhận thành công",
+                Content = $"Khách hàng {si.User?.Name + " "}đã xác nhận nhận được hàng thành công"
+            };
+            await notificationService.SendNotification(si.Restaurant!.OwnerId, ownerNoti);
+
             return Ok();
         }
         catch (Exception ex)

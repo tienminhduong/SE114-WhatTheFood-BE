@@ -15,6 +15,7 @@ namespace FoodAPI.Services
                 ?? throw new Exception("No user found");
 
             await notificationRepository.AddNewNotificationAsync(userId, notificationDto);
+            await notificationRepository.SaveChangeAsync();
             string responses = "";
             foreach (var token in user.NotificationTokens)
             {

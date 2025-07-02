@@ -16,10 +16,10 @@ public interface IShippingInfoRepository
     Task<bool> ShippingInfoExistsAsync(int shippingInfoId);
     Task<string> ShippingInfoBelongsToUserOrExistsAsync(int shippingInfoId, int? userId);
     Task CreateShippingInfoAsync(ShippingInfo shippingInfo);
-    Task ApprovedOrder(int shippingInfoId, int ownerId);
-    Task DeliverOrder(int shippingInfoId, int ownerId);
-    Task SetOrderDeliverd(int  shippingInfoId, int ownerId);
-    Task SetCompletedOrder(int shippingInfoId, int userId);
+    Task<ShippingInfo> ApprovedOrder(int shippingInfoId, int ownerId);
+    Task<ShippingInfo> DeliverOrder(int shippingInfoId, int ownerId);
+    Task<ShippingInfo> SetOrderDeliverd(int  shippingInfoId, int ownerId);
+    Task<ShippingInfo> SetCompletedOrder(int shippingInfoId, int userId);
     Task<bool> AddRatingAsync(int shippingInfoId, Rating rating);
     Task<bool> SaveChangesAsync();
 }
