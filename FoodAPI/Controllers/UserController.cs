@@ -168,7 +168,7 @@ public class UserController(IUserRepository userRepository,
 
     [Authorize]
     [HttpDelete("device-token")]
-    public async Task<ActionResult> DeleteDeviceToken([FromBody] NotificationTokenDto tokenDto)
+    public async Task<ActionResult> DeleteDeviceToken(string deviceToken)
     {
         try
         {
@@ -176,7 +176,7 @@ public class UserController(IUserRepository userRepository,
             var user = await userRepository.FindPhoneNumberExistsAsync(userPhone);
             if (user == null)
                 return BadRequest("Who tf are you!");
-            await notificationRepository.DeleteUserToken(tokenDto.DeviceToken);
+            await notificationRepository.DeleteUserToken(user.Id, deviceToken);
             await notificationRepository.SaveChangeAsync();
             return NoContent();
         }

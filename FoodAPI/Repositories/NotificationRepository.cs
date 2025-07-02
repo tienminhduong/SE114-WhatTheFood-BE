@@ -55,11 +55,14 @@ namespace FoodAPI.Repositories
             dbContext.Notifications.Remove(notification);
         }
 
-        public async Task DeleteUserToken(string deviceToken)
+        public async Task DeleteUserToken(int userId, string deviceToken)
         {
             var token = await dbContext.NotificationTokens
                 .FirstOrDefaultAsync(nt => nt.DeviceToken == deviceToken)
                 ?? throw new Exception("Device token not existed");
+
+            if (token.UserId != userId)
+                throw new Exception("Not your account");
 
             dbContext.NotificationTokens.Remove(token);
         }

@@ -13,5 +13,5 @@ public interface INotificationRepository
 
     public Task AddNotificationToken(int userId, string deviceToken);
     public Task<IEnumerable<string>> GetUserTokens(int userId);
-    public Task DeleteUserToken(string deviceToken);
+    public Task DeleteUserToken(int userId, string deviceToken);
 }
