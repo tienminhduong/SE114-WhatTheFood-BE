@@ -1,6 +1,8 @@
-﻿namespace FoodAPI.Interfaces
+﻿using FoodAPI.Models;
+
+namespace FoodAPI.Interfaces;
+
+public interface INotificationService
 {
-    public class INotificationService
-    {
-    }
+    Task<string> SendNotification(int userId, CreateNotificationDto notificationDto);
 }

@@ -59,6 +59,7 @@ builder.Services.AddScoped<IRestaurantRepository, RestaurantRepository>();
 builder.Services.AddScoped<IShippingInfoRepository, ShippingInfoRepository>();
 builder.Services.AddScoped<IMapRoutingService, MapRoutingService>();
 builder.Services.AddScoped<INotificationRepository, NotificationRepository>();
+builder.Services.AddScoped<INotificationService, NotificationService>();
 
 builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme).AddJwtBearer(
     options => {

@@ -18,6 +18,7 @@ public class ShippingInfoController(
     IRestaurantRepository restaurantRepository,
     IFoodItemRepository foodItemRepository,
     INotificationRepository notificationRepository,
+    INotificationService notificationService,
     IMapper mapper
     ) : ControllerBase
 {
@@ -136,8 +137,7 @@ public class ShippingInfoController(
             Content = $"{user.Name} đã đặt một đơn hàng!"
         };
 
-        await notificationRepository
-            .AddNewNotificationAsync(restaurant.OwnerId, notification);
+        await notificationService.SendNotification(restaurant.OwnerId, notification);
 
         if (!(await shippingInfoRepository.SaveChangesAsync()))
             return BadRequest();
