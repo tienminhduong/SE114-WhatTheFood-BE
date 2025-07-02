@@ -43,7 +43,7 @@ public class ShippingInfoRepository(FoodOrderContext foodOrderContext) : IShippi
     public async Task<ShippingInfo?> GetShippingInfoDetailsAsync(int shippingInfoId)
     {
         return await foodOrderContext.ShippingInfos
-            .Include(si => si.ShippingInfoDetails).ThenInclude(sid => sid.FoodItem)
+            .Include(si => si.ShippingInfoDetails).ThenInclude(sid => sid.FoodItem).ThenInclude(fi => fi!.FoodCategory)
             .Include(si => si.Restaurant).ThenInclude(r => r!.Address)
             .Include(si => si.Address)
             .FirstOrDefaultAsync(si => si.Id == shippingInfoId);

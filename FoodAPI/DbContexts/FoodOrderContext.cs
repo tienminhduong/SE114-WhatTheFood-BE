@@ -14,7 +14,7 @@ public class FoodOrderContext(DbContextOptions<FoodOrderContext> options): DbCon
     public DbSet<ShippingInfoDetail> ShippingInfoDetails { get; set; }
     public DbSet<User> Users { get; set; }
     public DbSet<Notification> Notifications { get; set; }
-
+    public DbSet<NotificationToken> NotificationTokens { get; set; }
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         base.OnModelCreating(modelBuilder);

@@ -10,4 +10,8 @@ public interface INotificationRepository
     public Task DeleteNotificationAsync(int notificationId);
     public Task<Notification> ReadNotificationAsync(int notificationId);
     public Task SaveChangeAsync();
+
+    public Task AddNotificationToken(int userId, string deviceToken);
+    public Task<IEnumerable<string>> GetUserTokens(int userId);
+    public Task DeleteUserToken(string deviceToken);
 }
