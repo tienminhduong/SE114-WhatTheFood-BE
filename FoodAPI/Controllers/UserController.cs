@@ -1,4 +1,5 @@
 ﻿using AutoMapper;
+using FirebaseAdmin.Auth;
 using FirebaseAdmin.Messaging;
 using FoodAPI.Entities;
 using FoodAPI.Interfaces;
@@ -221,5 +222,18 @@ public class UserController(IUserRepository userRepository,
         {
             return BadRequest(ex.Message);
         }
+    }
+
+    [HttpPost("test")]
+    public async Task<ActionResult> TestFirebase()
+    {
+        UserRecordArgs args = new UserRecordArgs()
+        {
+            PhoneNumber = "+84826245431",
+            Password = "dragnoud==3105",
+            DisplayName = "Duong",
+        };
+        UserRecord userRecord = await FirebaseAuth.DefaultInstance.CreateUserAsync(args);
+        return Ok($"Successfully created new user: {userRecord.Uid}");
     }
 }

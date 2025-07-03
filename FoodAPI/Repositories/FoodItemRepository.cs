@@ -72,6 +72,17 @@ namespace FoodAPI.Repositories
             return foodItems.Skip(offset).Take(pageSize).ToList();
         }
 
+        public async Task<IEnumerable<FoodItem>> GetItemsForOwnedRestaurant(int restaurantId)
+        {
+            var items = await dbContext.FoodItems
+                .Include(f => f.Restaurant)
+                .Include(f => f.FoodCategory)
+                .Where(f => f.RestaurantId ==  restaurantId)
+                .ToListAsync();
+
+            return items;
+        }
+
         public Task<bool> RemoveFoodItem(int id)
         {
             throw new NotImplementedException();

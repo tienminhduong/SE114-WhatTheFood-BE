@@ -11,5 +11,7 @@ public interface IRestaurantRepository
     Task<bool> CheckRestaurantExistAsync(int restaurantId);
     Task<(IEnumerable<Rating>,PaginationMetadata)> GetRatingsByRestaurantAsync(
         int restaurantId, int pageNumber, int pageSize);
+
+    Task<IEnumerable<ShippingInfo>> GetOrderByRestaurant(int restaurantId, string status = "");
     Task<bool> SaveChangesAsync();
 }

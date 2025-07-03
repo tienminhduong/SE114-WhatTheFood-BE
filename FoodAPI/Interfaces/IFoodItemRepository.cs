@@ -25,6 +25,7 @@ namespace FoodAPI.Interfaces
         Task<bool> FoodItemExistsAsync(int foodItemId);
         Task<FoodItemRatingDto> GetFoodItemAvgRating(int foodItemId);
         Task<IEnumerable<Rating>> GetRatingsByFoodItem(int foodItemId);
+        Task<IEnumerable<FoodItem>> GetItemsForOwnedRestaurant(int restaurantId);
         Task<bool> SaveChangeAsync();
     }
 }

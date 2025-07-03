@@ -37,6 +37,20 @@ public class RestaurantRepository(FoodOrderContext foodOrderContext) : IRestaura
         return await foodOrderContext.Restaurants.AnyAsync(r => r.Id == restaurantId);
     }
 
+    public async Task<IEnumerable<ShippingInfo>> GetOrderByRestaurant(int restaurantId, string status = "")
+    {
+        return await foodOrderContext.ShippingInfos
+            .Where(si => si.RestaurantId == restaurantId)
+            .Where(si => status == "" || si.Status == status)
+            .Include(si => si.Restaurant)
+            .Include(si => si.Address)
+            .Include(si => si.User)
+            .Include(si => si.Rating)
+            .Include(si => si.ShippingInfoDetails)
+                .ThenInclude(sd => sd.FoodItem)
+            .ToListAsync();
+    }
+
     public async Task<(IEnumerable<Rating>,PaginationMetadata)> GetRatingsByRestaurantAsync(
         int restaurantId, int pageNumber, int pageSize)
     {

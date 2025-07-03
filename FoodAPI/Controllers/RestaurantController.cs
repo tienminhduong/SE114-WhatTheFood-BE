@@ -14,6 +14,7 @@ namespace FoodAPI.Controllers;
 public class RestaurantController(
     IRestaurantRepository restaurantRepository,
     IUserRepository userRepository,
+    IFoodItemRepository foodItemRepository,
     IMapper mapper
     ) : ControllerBase
 {
@@ -27,7 +28,7 @@ public class RestaurantController(
         return Ok(mapper.Map<IEnumerable<RestaurantDto>>(restaurants));
     }
 
-    [HttpGet("{id}", Name = "GetRestaurant")]
+    [HttpGet("detail/{id}", Name = "GetRestaurant")]
     [Authorize(Policy = "UserAccessLevel")]
     public async Task<ActionResult<RestaurantDto>> GetRestaurant(int id, bool includeFoodItems = false)
     {
@@ -75,5 +76,112 @@ public class RestaurantController(
             .GetRatingsByRestaurantAsync(restaurantId, pageNumber, pageSize);
         Response.Headers.Append("X-Pagination", JsonSerializer.Serialize(paginationMetadata));
         return Ok(mapper.Map<IEnumerable<RatingDto>>(restaurantRatings));
+    }
+
+    [HttpGet("{restaurantId}/orders")]
+    public async Task<ActionResult<IEnumerable<ShippingInfoDto>>> GetAllOrders(int restaurantId)
+    {
+        try
+        {
+            var list = await restaurantRepository.GetOrderByRestaurant(restaurantId);
+            return Ok(mapper.Map<IEnumerable<ShippingInfoDto>>(list));
+        }
+        catch (Exception ex)
+        {
+            return BadRequest(ex.Message);
+        }
+    }
+
+    [HttpGet("{restaurantId}/orders/pending")]
+    public async Task<ActionResult<IEnumerable<ShippingInfoDto>>> GetPendingOrders(int restaurantId)
+    {
+        try
+        {
+            var list = await restaurantRepository.GetOrderByRestaurant(restaurantId, "Pending");
+            return Ok(mapper.Map<IEnumerable<ShippingInfoDto>>(list));
+        }
+        catch (Exception ex)
+        {
+            return BadRequest(ex.Message);
+        }
+    }
+
+    [HttpGet("{restaurantId}/orders/delivering")]
+    public async Task<ActionResult<IEnumerable<ShippingInfoDto>>> GetDeleveringOrders(int restaurantId)
+    {
+        try
+        {
+            var list = await restaurantRepository.GetOrderByRestaurant(restaurantId, "Delevering");
+            return Ok(mapper.Map<IEnumerable<ShippingInfoDto>>(list));
+        }
+        catch (Exception ex)
+        {
+            return BadRequest(ex.Message);
+        }
+    }
+
+    [HttpGet("{restaurantId}/orders/approved")]
+    public async Task<ActionResult<IEnumerable<ShippingInfoDto>>> GetApprovedOrders(int restaurantId)
+    {
+        try
+        {
+            var list = await restaurantRepository.GetOrderByRestaurant(restaurantId, "Approved");
+            return Ok(mapper.Map<IEnumerable<ShippingInfoDto>>(list));
+        }
+        catch (Exception ex)
+        {
+            return BadRequest(ex.Message);
+        }
+    }
+
+    [HttpGet("{restaurantId}/orders/delivered")]
+    public async Task<ActionResult<IEnumerable<ShippingInfoDto>>> GetDeliveredOrders(int restaurantId)
+    {
+        try
+        {
+            var list = await restaurantRepository.GetOrderByRestaurant(restaurantId, "Delivered");
+            return Ok(mapper.Map<IEnumerable<ShippingInfoDto>>(list));
+        }
+        catch (Exception ex)
+        {
+            return BadRequest(ex.Message);
+        }
+    }
+
+    [HttpGet("{restaurantId}/orders/completed")]
+    public async Task<ActionResult<IEnumerable<ShippingInfoDto>>> GetCompletedOrder(int restaurantId)
+    {
+        try
+        {
+            var list = await restaurantRepository.GetOrderByRestaurant(restaurantId, "Completed");
+            return Ok(mapper.Map<IEnumerable<ShippingInfoDto>>(list));
+        }
+        catch (Exception ex)
+        {
+            return BadRequest(ex.Message);
+        }
+    }
+
+    [Authorize(Policy = "OwnerAccessLevel")]
+    [HttpGet("fooditems")]
+    public async Task<ActionResult<IEnumerable<FoodItemDto>>> GetFoodItems()
+    {
+        try
+        {
+            string senderPhone = User.FindFirstValue(ClaimTypes.NameIdentifier)!;
+            var user = await userRepository.FindPhoneNumberExistsAsync(senderPhone);
+            if (user == null)
+                return BadRequest("Who tf are you");
+
+            List<FoodItem> foodItems = [];
+            foreach (var restaurant in user.OwnedRestaurant)
+                foodItems.AddRange(await foodItemRepository.GetItemsForOwnedRestaurant(restaurant.Id));
+
+            return Ok(mapper.Map<IEnumerable<FoodItemDto>>(foodItems));
+        }
+        catch (Exception e)
+        {
+            return BadRequest(e.Message);
+        }
     }
 }

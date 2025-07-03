@@ -10,6 +10,7 @@ public class ShippingInfoDto
     public RestaurantDto? Restaurant { get; set; }
     public string Status { get; set; } = string.Empty;
     public string PaymentMethod { get; set; } = string.Empty;
+    public UserDto? User { get; set; }
     
     public IEnumerable<ShippingInfoDetailDto>? ShippingInfoDetails { get; set; }
 
