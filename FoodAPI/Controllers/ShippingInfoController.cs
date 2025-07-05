@@ -17,7 +17,6 @@ public class ShippingInfoController(
     IUserRepository userRepository,
     IRestaurantRepository restaurantRepository,
     IFoodItemRepository foodItemRepository,
-    INotificationRepository notificationRepository,
     INotificationService notificationService,
     IMapper mapper
     ) : ControllerBase
@@ -37,6 +36,22 @@ public class ShippingInfoController(
         Response.Headers.Append("X-Pagination", JsonSerializer.Serialize(paginationMetadata));
         return Ok(mapper.Map<IEnumerable<ShippingInfoDto>>(shippingInfo));
     }
+
+    [HttpGet("owner/{status}")]
+    [Authorize(Policy = "OwnerAccessLevel")]
+    public async Task<ActionResult<IEnumerable<ShippingInfoDto>>> GetAllByOwner(string status)
+    {
+        string senderPhone = User.FindFirstValue(ClaimTypes.NameIdentifier)!;
+        var user = await userRepository.FindPhoneNumberExistsAsync(senderPhone);
+
+        if (user == null)
+            return NotFound();
+
+        var items = await shippingInfoRepository.GetAllOwnedOrder(user.Id, status == "all" ? "" : status);
+        return Ok(mapper.Map<IEnumerable<ShippingInfoDto>>(items));
+    }
+
+
 
     [HttpGet]
     [Authorize(Policy = "UserAccessLevel")]
@@ -68,6 +83,14 @@ public class ShippingInfoController(
         int pageNumber = 0, int pageSize = 10)
     {
         return await GetOrders(pageNumber, pageSize, "Delivering");
+    }
+
+    [HttpGet("delivered")]
+    [Authorize(Policy = "UserAccessLevel")]
+    public async Task<ActionResult<IEnumerable<ShippingInfoDto>>> GetAllDeliveredOrdersByUser(
+        int pageNumber = 0, int pageSize = 10)
+    {
+        return await GetOrders(pageNumber, pageSize, "Delivered");
     }
 
     [HttpGet("completed")]
@@ -139,8 +162,7 @@ public class ShippingInfoController(
 
         await notificationService.SendNotification(restaurant.OwnerId, notification);
 
-        if (!(await shippingInfoRepository.SaveChangesAsync()))
-            return BadRequest();
+        await shippingInfoRepository.SaveChangesAsync();
         
         var createdShippingInfo = mapper.Map<ShippingInfoDto>(shippingInfoEntity);
 

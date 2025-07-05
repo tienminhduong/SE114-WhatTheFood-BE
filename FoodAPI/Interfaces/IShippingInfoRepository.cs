@@ -10,7 +10,7 @@ public interface IShippingInfoRepository
 
     //Task<IEnumerable<ShippingInfo>> GetAllUserPendingOrdersAsync(int userId);
     //Task<IEnumerable<ShippingInfo>> GetAllUserCompletedOrdersAsync(int userId);
-
+    Task<IEnumerable<ShippingInfo>> GetAllOwnedOrder(int ownerId, string status = "");
     Task<int> GetTotalRestaurantOrderAsync(int restaurantId);
     Task<ShippingInfo?> GetShippingInfoDetailsAsync(int shippingInfoId);
     Task<bool> ShippingInfoExistsAsync(int shippingInfoId);

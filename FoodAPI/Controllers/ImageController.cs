@@ -106,10 +106,20 @@ public class ImageController(
         await restaurantRepository.SaveChangesAsync();
         return Ok(mapper.Map<RestaurantDto>(restaurantEntity));
     }
+
+    [HttpPost("custom/food")]
+    public async Task<ActionResult> UploadImage(IFormFile image)
+    {
+        var uploadResult = await imageService.AddImageAsync(image, 300, 300);
+        if (uploadResult.Error != null)
+            return BadRequest(uploadResult.Error.Message);
+
+        return Ok(new { url = uploadResult.SecureUrl.AbsoluteUri });
+    }
     
     [HttpPost("fooditem")]
     [Authorize(Policy = "OwnerAccessLevel")]
-    public async Task<ActionResult<RestaurantDto>> UploadFoodItemImage(IFormFile image, int foodItemId)
+    public async Task<ActionResult<FoodItemDto>> UploadFoodItemImage(IFormFile image, int foodItemId)
     {
         var foodItemEntity = await foodItemRepository.GetById(foodItemId);
         if (foodItemEntity == null)

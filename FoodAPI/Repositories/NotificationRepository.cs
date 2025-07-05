@@ -33,8 +33,11 @@ namespace FoodAPI.Repositories
             var t = await dbContext.NotificationTokens
                 .FirstOrDefaultAsync(nt => nt.DeviceToken == deviceToken);
 
+            //if (t != null)
+            //throw new Exception("Device token already existed");
+
             if (t != null)
-                throw new Exception("Device token already existed");
+                dbContext.NotificationTokens.Remove(t);
 
             NotificationToken token = new()
             {
@@ -74,7 +77,10 @@ namespace FoodAPI.Repositories
                 .FirstOrDefaultAsync(u => u.Id == userId)
                 ?? throw new Exception("No user found");
 
-            return user.Notifications.ToList();
+            return user.Notifications
+                .OrderBy(n => n.IsRead)
+                .OrderByDescending(n => n.DateTime)
+                .ToList();
         }
 
         public async Task<IEnumerable<string>> GetUserTokens(int userId)

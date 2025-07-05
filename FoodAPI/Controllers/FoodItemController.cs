@@ -14,6 +14,7 @@ namespace FoodAPI.Controllers;
 [ApiController]
 public class FoodItemController(
     IFoodItemRepository foodItemRepository,
+    IUserRepository userRepository,
     IFoodCategoryRepository foodCategoryRepository,
     IAuthService authService,
     IMapRoutingService mapRoutingService,
@@ -37,12 +38,21 @@ public class FoodItemController(
     {
         try
         {
+            var senderPhone = User.FindFirstValue(ClaimTypes.NameIdentifier)!;
+            var user = await userRepository.FindPhoneNumberExistsAsync(senderPhone);
+            if (user == null)
+                return Unauthorized();
+
+            var res = user.OwnedRestaurant.FirstOrDefault();
+            int resId = res?.Id ?? 0;
+                
+
             var fooditems = await foodItemRepository.GetItemsBy(
                 pageNumber,
                 pageSize,
                 categoryId,
                 nameContains,
-                restaurantId,
+                user.Role == "Owner" ? resId : restaurantId,
                 isAvailableOnly,
                 priceLowerThan,
                 priceHigherThan,
@@ -73,12 +83,15 @@ public class FoodItemController(
     public async Task<ActionResult<FoodItemDto>> CreateNewItem(CreateFoodItemDto itemDto)
     {
         string senderPhone = User.FindFirstValue(ClaimTypes.NameIdentifier)!;
+        var owner = await userRepository.FindPhoneNumberExistsAsync(senderPhone);
+        if (owner == null)
+            return BadRequest("How tf are you here");
+        var restaurant = owner.OwnedRestaurant.FirstOrDefault();
+        if (restaurant == null)
+            return BadRequest("No restaurant owned, buy a new one");
 
-        string? ownerPermissionCheckMsg =
-            await authService.CheckOwnerPermission(senderPhone, itemDto.RestaurantId);
+        itemDto.RestaurantId = restaurant.Id;
 
-        if (ownerPermissionCheckMsg != null)
-            return BadRequest(ownerPermissionCheckMsg);
 
         var category = await foodCategoryRepository.GetCategoryByName(itemDto.CategoryName);
         category ??= await foodCategoryRepository.AddCategoryAsync(itemDto.CategoryName);
@@ -96,6 +109,7 @@ public class FoodItemController(
             Price = itemDto.Price,
             FoodCategoryId = category.Id,
             RestaurantId = itemDto.RestaurantId,
+            CldnrUrl = itemDto.ImgUrl
         };
 
         await foodItemRepository.AddFoodItemAsync(item);
@@ -127,6 +141,7 @@ public class FoodItemController(
         foodItem.Price = itemDto.Price;
         foodItem.SoldAmount = itemDto.SoldAmount;
         foodItem.Available = itemDto.Available;
+        foodItem.CldnrUrl = itemDto.ImgUrl;
 
         var category = await foodCategoryRepository.GetCategoryByName(itemDto.CategoryName);
         category ??= await foodCategoryRepository.AddCategoryAsync(itemDto.CategoryName);

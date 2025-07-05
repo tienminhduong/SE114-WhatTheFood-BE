@@ -8,5 +8,6 @@
         public int Price { get; set; }
         public int SoldAmount { get; set; }
         public bool Available { get; set; }
+        public string ImgUrl { get; set; } = string.Empty;
     }
 }

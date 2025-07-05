@@ -15,7 +15,7 @@ namespace FoodAPI.Controllers;
 public class UserController(IUserRepository userRepository,
     IAuthService authService,
     INotificationRepository notificationRepository,
-    IMapper mapper): ControllerBase
+    IMapper mapper) : ControllerBase
 {
     [HttpGet]
     [Authorize(Policy = "AdminAccessLevel")]
@@ -205,7 +205,7 @@ public class UserController(IUserRepository userRepository,
             {
                 var message = new Message()
                 {
-                    Notification = new ()
+                    Notification = new()
                     {
                         Title = "Vcl",
                         Body = "DDCaghwlghjkghekhgjkerhgk"
@@ -224,16 +224,15 @@ public class UserController(IUserRepository userRepository,
         }
     }
 
-    [HttpPost("test")]
-    public async Task<ActionResult> TestFirebase()
+    [Authorize(Policy = "OwnerAccessLevel")]
+    [HttpGet("ownedrestaurant")]
+    public async Task<ActionResult> GetOwnedRestaurants()
     {
-        UserRecordArgs args = new UserRecordArgs()
-        {
-            PhoneNumber = "+84826245431",
-            Password = "dragnoud==3105",
-            DisplayName = "Duong",
-        };
-        UserRecord userRecord = await FirebaseAuth.DefaultInstance.CreateUserAsync(args);
-        return Ok($"Successfully created new user: {userRecord.Uid}");
+        var userPhone = User.FindFirstValue(ClaimTypes.NameIdentifier)!;
+        var user = await userRepository.FindPhoneNumberExistsAsync(userPhone);
+        if (user == null)
+            return BadRequest("Who tf are you!");
+
+        return Ok(new { restaurantId = user.OwnedRestaurant.FirstOrDefault()!.Id });
     }
 }

@@ -34,6 +34,25 @@ public class ShippingInfoRepository(FoodOrderContext foodOrderContext) : IShippi
         return (collectionToReturn, paginationMetadata);
     }
 
+    public async Task<IEnumerable<ShippingInfo>> GetAllOwnedOrder(int ownerId, string status = "")
+    {
+        var items = await foodOrderContext.ShippingInfos
+            .Include(si => si.Restaurant)
+                .ThenInclude(r => r!.Address)
+            .Include(si => si.ShippingInfoDetails)
+                .ThenInclude(sd => sd.FoodItem)
+                    .ThenInclude(fi => fi!.FoodCategory)
+            .Include(si => si.Address)
+            .Include(si => si.Rating)
+            .Include(si => si.User)
+            .OrderBy(si => si.OrderTime)
+            .Where(si => si.Restaurant!.OwnerId == ownerId)
+            .Where(si => status == "" || si.Status == status)
+            .ToListAsync();
+
+        return items;
+    }
+
     public async Task<int> GetTotalRestaurantOrderAsync(int restaurantId)
     {
         return await foodOrderContext.ShippingInfos
